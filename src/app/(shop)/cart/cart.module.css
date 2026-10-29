@@ -1,0 +1,45 @@
+.page {
+  padding-top: 8px;
+  padding-bottom: 32px;
+}
+.deskTitle {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 32px 0 16px;
+}
+.layout {
+  display: grid;
+  gap: 20px;
+}
+.lines {
+  display: flex;
+  flex-direction: column;
+}
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.cta {
+  gap: 4px;
+}
+@media (min-width: 960px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) 380px;
+    gap: 48px;
+    align-items: start;
+  }
+  .summary {
+    position: sticky;
+    top: 92px;
+    padding: 24px;
+    background: var(--surface-card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+  }
+  .cta {
+    padding: 0;
+    border: 0;
+  }
+}

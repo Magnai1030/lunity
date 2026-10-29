@@ -1,0 +1,33 @@
+.page {
+  padding-top: 4px;
+  padding-bottom: 48px;
+}
+.deskTitle {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 32px 0 8px;
+}
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+.main {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.main > a:hover {
+  text-decoration: underline;
+}
+.main > div {
+  margin-top: 8px;
+}
+.row > button {
+  margin: -6px -10px 0 0;
+}

@@ -1,0 +1,51 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-top: 28px;
+  padding-bottom: 48px;
+}
+.head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+.avatar {
+  width: 72px;
+  height: 72px;
+  margin-bottom: 8px;
+  font-size: 26px;
+}
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  background: var(--surface-card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+}
+.stats > div {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  padding: 16px 8px;
+  text-align: center;
+}
+.stats > div + div {
+  border-left: 1px solid var(--line);
+}
+.stats dd {
+  font-size: 18px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}

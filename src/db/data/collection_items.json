@@ -1,0 +1,9 @@
+[
+  {"id":"home-hero.0","collectionId":"home-hero","position":0,"kind":"product","itemId":"p2"},
+  {"id":"home-hero.1","collectionId":"home-hero","position":1,"kind":"product","itemId":"p1"},
+  {"id":"home-hero.2","collectionId":"home-hero","position":2,"kind":"product","itemId":"p6"},
+  {"id":"home-hero.3","collectionId":"home-hero","position":3,"kind":"set","itemId":"p12"},
+  {"id":"home-sets.0","collectionId":"home-sets","position":0,"kind":"set","itemId":"p12"},
+  {"id":"home-sets.1","collectionId":"home-sets","position":1,"kind":"set","itemId":"p5"},
+  {"id":"home-sets.2","collectionId":"home-sets","position":2,"kind":"set","itemId":"p10"}
+]

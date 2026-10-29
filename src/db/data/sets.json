@@ -1,0 +1,7 @@
+[
+  {"productId":"p12","group":"food","savings":25000,"highlight":{"en":"Ul boov + aaruul + tea + khadag","mn":"Ул боов + ааруул + цай + хадаг"}},
+  {"productId":"p5","group":"home","savings":12000,"highlight":{"en":"Teapot + 2 bowls + milk tea","mn":"Данх + 2 аяга + сүүтэй цай"}},
+  {"productId":"p1","group":"food","savings":null,"highlight":{"en":"3 flavours in a tin","mn":"3 амт, төмөр хайрцагт"}},
+  {"productId":"p3","group":"food","savings":null,"highlight":{"en":"16 filled chocolates","mn":"16 чихмэлтэй шоколад"}},
+  {"productId":"p10","group":"wear","savings":null,"highlight":{"en":"3 pairs, boxed","mn":"3 хос, хайрцагтай"}}
+]

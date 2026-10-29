@@ -1,0 +1,113 @@
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+.media {
+  min-width: 0;
+}
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 20px var(--gutter) 0;
+  min-width: 0;
+}
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.brand {
+  align-self: flex-start;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.incHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.incList {
+  display: flex;
+  flex-direction: column;
+}
+.incRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.incRow:last-child {
+  border-bottom: 0;
+}
+.qtyBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-chip);
+  font: 800 14px/1 var(--font-sans);
+  font-variant-numeric: tabular-nums;
+}
+.note {
+  text-align: center;
+}
+.related {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 40px;
+  padding-bottom: 32px;
+}
+.relGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.relGrid > :nth-child(n + 3) {
+  display: none;
+}
+
+@media (min-width: 720px) {
+  .layout {
+    width: 100%;
+    max-width: calc(var(--content) + var(--gutter) * 2);
+    margin: 0 auto;
+    padding: 32px var(--gutter) 0;
+    gap: 32px;
+  }
+  .relGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px;
+  }
+  .relGrid > :nth-child(n + 3) {
+    display: flex;
+  }
+}
+@media (min-width: 960px) {
+  .layout {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: 48px;
+    align-items: start;
+  }
+  .media {
+    position: sticky;
+    top: 92px;
+  }
+  .mat {
+    aspect-ratio: 1 / 1;
+  }
+  .info {
+    padding: 0;
+  }
+  .related {
+    padding-top: 64px;
+    padding-bottom: 64px;
+  }
+}

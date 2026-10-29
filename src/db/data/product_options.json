@@ -1,0 +1,14 @@
+[
+  {"id":"p1.size","productId":"p1","key":"size","position":0,"name":{"en":"Weight","mn":"Жин"},"spec":"size"},
+  {"id":"p2.size","productId":"p2","key":"size","position":0,"name":{"en":"Layers","mn":"Давхар"},"spec":"size"},
+  {"id":"p3.size","productId":"p3","key":"size","position":0,"name":{"en":"Size","mn":"Хэмжээ"},"spec":"size"},
+  {"id":"p4.size","productId":"p4","key":"size","position":0,"name":{"en":"Size","mn":"Хэмжээ"},"spec":"size"},
+  {"id":"p5.tier","productId":"p5","key":"tier","position":0,"name":{"en":"Edition","mn":"Хувилбар"},"spec":"tier"},
+  {"id":"p6.colour","productId":"p6","key":"colour","position":0,"name":{"en":"Colour","mn":"Өнгө"},"spec":null},
+  {"id":"p6.size","productId":"p6","key":"size","position":1,"name":{"en":"Length","mn":"Урт"},"spec":"size"},
+  {"id":"p7.size","productId":"p7","key":"size","position":0,"name":{"en":"Pack","mn":"Тоо"},"spec":"size"},
+  {"id":"p8.size","productId":"p8","key":"size","position":0,"name":{"en":"Size","mn":"Хэмжээ"},"spec":"size"},
+  {"id":"p9.colour","productId":"p9","key":"colour","position":0,"name":{"en":"Colour","mn":"Өнгө"},"spec":null},
+  {"id":"p10.size","productId":"p10","key":"size","position":0,"name":{"en":"Size","mn":"Хэмжээ"},"spec":"size"},
+  {"id":"p12.tier","productId":"p12","key":"tier","position":0,"name":{"en":"Edition","mn":"Хувилбар"},"spec":"tier"}
+]

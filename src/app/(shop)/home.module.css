@@ -1,0 +1,248 @@
+.heroBand {
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--line);
+  padding: 32px 0 36px;
+}
+.hero {
+  display: grid;
+  gap: 28px;
+}
+.heroCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 640px;
+  text-wrap: pretty;
+}
+.cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+.heroVis {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 12px;
+  background: var(--surface-mat);
+  border-radius: var(--radius-card);
+}
+.heroItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 4 / 3;
+  padding: 16%;
+  border: 0;
+  border-radius: var(--radius-mat);
+  background: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.heroItem:hover {
+  background: var(--surface-chip);
+}
+.heroItem svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 8px 8px rgba(20, 20, 20, 0.2));
+}
+
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-9);
+  padding: 40px 0 56px;
+}
+.sec {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.secHead {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.secRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.barGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  min-height: 72px;
+  padding: 14px 18px;
+  background: var(--surface-card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.bar:hover {
+  background: var(--surface-chip);
+}
+.barText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.brand {
+  align-items: flex-end;
+}
+.brand .barText {
+  gap: 4px;
+}
+.brandGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+
+.rail {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--gutter);
+  margin: -4px calc(var(--gutter) * -1) -12px;
+  padding: 4px var(--gutter) 12px;
+  scrollbar-width: none;
+}
+.rail::-webkit-scrollbar {
+  display: none;
+}
+.railCard {
+  flex: 0 0 200px;
+  scroll-snap-align: start;
+}
+
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.filterRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.giftsFor {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.giftsLine {
+  min-height: 1.5em;
+}
+.giftsMore {
+  align-self: flex-start;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.noMatch {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 24px 0;
+}
+
+@media (min-width: 720px) {
+  .heroBand {
+    padding: 56px 0;
+  }
+  .hero {
+    gap: 40px;
+    text-align: center;
+  }
+  .heroCopy {
+    margin: 0 auto;
+    align-items: center;
+  }
+  .cta {
+    justify-content: center;
+  }
+  .heroVis {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    padding: 20px;
+  }
+  .sections {
+    gap: 64px;
+    padding-top: 56px;
+  }
+  .secHead {
+    align-items: center;
+    text-align: center;
+  }
+  .secRow {
+    justify-content: center;
+    gap: 16px;
+  }
+  .filters {
+    align-items: center;
+  }
+  .filterRow {
+    justify-content: center;
+  }
+  .barGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+  }
+  .brandGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+  }
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+  }
+  .giftsLine {
+    text-align: center;
+  }
+  .giftsMore {
+    align-self: center;
+  }
+  .railDeskGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+    overflow: visible;
+    margin: 0;
+    padding: 0;
+  }
+  .railDesk3 {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+    overflow: visible;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid,
+  .brandGrid,
+  .railDeskGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
