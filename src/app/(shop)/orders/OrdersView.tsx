@@ -52,8 +52,8 @@ export function OrdersView() {
                       <Badge tone={statusTone(o.status)}>{t.status[o.status]}</Badge>
                     </div>
                     <div className={s.thumbs}>
-                      {o.items.map((i) => (
-                        <Thumb key={i.id} art={i.id} photo={coverPhoto(i.id)} size={52} />
+                      {o.items.map((i, k) => (
+                        <Thumb key={`${k}-${i.id}`} art={i.id} photo={coverPhoto(i.id)} size={52} />
                       ))}
                     </div>
                     <div className={s.cardFoot}>

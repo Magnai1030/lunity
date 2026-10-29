@@ -2,9 +2,9 @@
  * Read layer over the mock database (src/db). Rows are joined into the shapes the UI uses;
  * pages and components import from here, never from src/db directly.
  */
-import { db, type Category, type CollectionItemKind, type DeliveryMethod, type Lang, type Localized, type OrderStatus, type Recipient, type SetGroup } from "@/db";
+import { db, type SetItemRow, type CategoryRow, type CollectionItemKind, type Lang, type Localized, type OrderStatus, type Recipient, type SetGroup } from "@/db";
 
-export type { Category, CollectionItemKind, DeliveryMethod, Lang, OrderStatus, Recipient, SetGroup };
+export type { CategoryRow, CollectionItemKind, Lang, OrderStatus, Recipient, SetGroup };
 export type Tier = "classic" | "premium" | "";
 
 export type Brand = {
@@ -17,7 +17,8 @@ export type Product = {
   id: string;
   no: string;
   brand: string;
-  cat: Category;
+  /** categories.id */
+  cat: string;
   recipients: Recipient[];
   tier: Tier;
   top?: boolean;
@@ -63,11 +64,10 @@ export type Order = {
   placed: string;
   readyBy: string;
   status: OrderStatus;
-  deliveryMethod: DeliveryMethod;
   address: string;
   contactPhone: string;
   shippingFee: number;
-  items: { id: string; qty: number; unitPrice: number }[];
+  items: { id: string; qty: number; unitPrice: number; regularUnitPrice: number; variant: Localized<string> | null }[];
 };
 
 /** Store-wide values: contact details, delivery promise, fees. */
@@ -77,12 +77,43 @@ const byPosition = (a: { position: number }, b: { position: number }) => a.posit
 
 export const brands: Brand[] = db.brands;
 
+/* Categories: a tree up to 3 levels deep. */
+
+export const categories: CategoryRow[] = [...db.categories].sort(byPosition);
+export const getCategory = (id: string) => categories.find((c) => c.id === id);
+export const categoryChildren = (parentId: string | null) => categories.filter((c) => c.parentId === parentId);
+/** Top-level categories listed in the header and menu. */
+export const menuCategories = categoryChildren(null).filter((c) => c.showInMenu);
+export const categoryName = (id: string, lang: Lang) => getCategory(id)?.name[lang] ?? "";
+
+/** Ancestors first, then the category itself: [Sweets, Aaruul, Smoked]. */
+export function categoryPath(id: string): CategoryRow[] {
+  const path: CategoryRow[] = [];
+  for (let c = getCategory(id); c; c = c.parentId ? getCategory(c.parentId) : undefined) path.unshift(c);
+  return path;
+}
+
+/** A category and everything beneath it, so choosing "Sweets" includes its subcategories. */
+export function categoryAndBelow(id: string): Set<string> {
+  const out = new Set([id]);
+  for (let added = true; added; ) {
+    added = false;
+    for (const c of categories) {
+      if (c.parentId && out.has(c.parentId) && !out.has(c.id)) {
+        out.add(c.id);
+        added = true;
+      }
+    }
+  }
+  return out;
+}
+
 /** Every product, archived ones included, so old orders and lookups still resolve. */
 export const allProducts: Product[] = db.products.map((p) => ({
   id: p.id,
   no: p.sku,
   brand: p.brandId,
-  cat: p.category,
+  cat: p.categoryId,
   recipients: p.recipients,
   tier: p.tier ?? "",
   top: p.isTop,
@@ -101,6 +132,27 @@ export const isListed = (id: string) => !archived.has(id) && allProducts.some((p
 /** Products shown in the store: everything that isn't archived. */
 export const products: Product[] = allProducts.filter((p) => !archived.has(p.id));
 
+/** A set item's name (its product's title) and detail (its note, else the chosen variant, else the product size). */
+function setItemText(x: SetItemRow): Localized<{ name: string; spec: string }> {
+  const p = db.products.find((y) => y.id === x.productId);
+  const options = db.productOptions.filter((o) => o.productId === x.productId).sort(byPosition);
+  const spec = (lang: Lang) => {
+    if (x.note) return x.note[lang];
+    if (!options.length) return p?.text[lang].size ?? "";
+    return options
+      .map((o) => {
+        const values = db.optionValues.filter((v) => v.optionId === o.id);
+        return (values.find((v) => v.key === x.selection[o.key]) ?? values.find((v) => v.isDefault) ?? values[0])?.label[lang];
+      })
+      .filter(Boolean)
+      .join(" · ");
+  };
+  return {
+    en: { name: p?.text.en.title ?? x.productId, spec: spec("en") },
+    mn: { name: p?.text.mn.title ?? x.productId, spec: spec("mn") },
+  };
+}
+
 /** Bundle contents for every set product, archived ones included. */
 const allSets: SetInfo[] = db.sets.map((s) => ({
   id: s.productId,
@@ -110,7 +162,7 @@ const allSets: SetInfo[] = db.sets.map((s) => ({
   includes: db.setItems
     .filter((x) => x.setId === s.productId)
     .sort(byPosition)
-    .map((x) => ({ art: x.artProductId, qty: x.qty, text: x.text })),
+    .map((x) => ({ art: x.productId, qty: x.qty, text: setItemText(x) })),
 }));
 /** Sets shown in the store. */
 export const sets: SetInfo[] = allSets.filter((s) => !archived.has(s.id));
@@ -120,11 +172,12 @@ export const orders: Order[] = db.orders.map((o) => ({
   placed: o.placedAt,
   readyBy: o.readyBy,
   status: o.status,
-  deliveryMethod: o.deliveryMethod,
   address: o.address,
   contactPhone: o.contactPhone,
   shippingFee: o.shippingFee,
-  items: db.orderItems.filter((it) => it.orderId === o.id).map((it) => ({ id: it.productId, qty: it.qty, unitPrice: it.unitPrice })),
+  items: db.orderItems
+    .filter((it) => it.orderId === o.id)
+    .map((it) => ({ id: it.productId, qty: it.qty, unitPrice: it.unitPrice, regularUnitPrice: it.regularUnitPrice, variant: it.variant })),
 }));
 
 /** Signed-in demo account until real auth exists. */
@@ -139,12 +192,6 @@ export const getSet = (id: string) => allSets.find((s) => s.id === id);
 export const getOrder = (id: string) => orders.find((o) => o.id === id);
 /** First photo of a product, if it has any; cards and thumbnails fall back to the drawing. */
 export const coverPhoto = (id: string) => getProduct(id)?.photos?.[0];
-
-/** Id the next placed order gets: highest existing number + 1, zero-padded like the rest. */
-export function nextOrderId() {
-  const max = Math.max(0, ...orders.map((o) => Number(o.id)));
-  return String(max + 1).padStart(4, "0");
-}
 
 /**
  * Days until `qty` of a product is delivered: the usual promise while stock covers it,
@@ -263,6 +310,8 @@ export const productHref = (id: string) => (getSet(id) ? `/sets/${id}` : `/produ
 
 export const orderSubtotal = (o: Order) => o.items.reduce((sum, it) => sum + it.unitPrice * it.qty, 0);
 export const orderTotal = (o: Order) => orderSubtotal(o) + o.shippingFee;
+/** What sale prices saved on this order versus regular prices. */
+export const orderSavings = (o: Order) => o.items.reduce((sum, it) => sum + (it.regularUnitPrice - it.unitPrice) * it.qty, 0);
 
 /** Who gifts are for, in display order. */
 export const recipients = [...db.recipients].sort(byPosition);
@@ -276,7 +325,8 @@ export const giftsFor = (id: Recipient) =>
 
 export type Filters = {
   q: string;
-  cat: Category | "all";
+  /** categories.id, or "all". */
+  cat: string;
   to: Recipient | "all";
   brand: string;
   top: boolean;
@@ -289,7 +339,7 @@ export const defaultFilters: Filters = { q: "", cat: "all", to: "all", brand: ""
 export function filterProducts(f: Filters, lang: Lang) {
   const q = f.q.trim().toLowerCase();
   return products.filter((p) => {
-    if (f.cat !== "all" && p.cat !== f.cat) return false;
+    if (f.cat !== "all" && !categoryAndBelow(f.cat).has(p.cat)) return false;
     if (f.to !== "all" && !p.recipients.includes(f.to)) return false;
     if (f.brand && p.brand !== f.brand) return false;
     if (f.top && !p.top) return false;

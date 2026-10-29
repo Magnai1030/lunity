@@ -13,7 +13,7 @@ import s from "../../admin.module.css";
 
 export const metadata: Metadata = { title: "Order" };
 
-const METHOD = { pickup: "Pickup in store", delivery: "Home delivery" } as const;
+const PAYMENT = { qpay: "QPay", socialpay: "SocialPay", card: "Card", bank: "Bank transfer" } as const;
 
 export default function OrderPage({ params }: PageProps<"/admin/orders/[id]">) {
   return (
@@ -52,8 +52,15 @@ async function Order({ params }: Pick<PageProps<"/admin/orders/[id]">, "params">
                     <Link href={`/admin/products/${l.productId}`} className="body-strong textlink">
                       {l.title}
                     </Link>
-                    <span className="small muted">
-                      {l.sku} · {l.qty} × {mnt(l.unitPrice)}
+                    <span className="small muted">{[l.sku, l.variant?.en].filter(Boolean).join(" · ")}</span>
+                    <span className="small">
+                      {l.qty} × {mnt(l.unitPrice)}
+                      {l.regularUnitPrice > l.unitPrice && (
+                        <>
+                          {" "}
+                          <s className="muted">{mnt(l.regularUnitPrice)}</s> <Badge tone="error">Sale</Badge>
+                        </>
+                      )}
                     </span>
                   </span>
                   <span className="body-strong">{mnt(l.qty * l.unitPrice)}</span>
@@ -65,6 +72,12 @@ async function Order({ params }: Pick<PageProps<"/admin/orders/[id]">, "params">
                 <dt>Subtotal</dt>
                 <dd>{mnt(o.subtotal)}</dd>
               </div>
+              {o.savings > 0 && (
+                <div>
+                  <dt>Sale savings</dt>
+                  <dd>−{mnt(o.savings)}</dd>
+                </div>
+              )}
               <div>
                 <dt>Shipping</dt>
                 <dd>{o.shippingFee ? mnt(o.shippingFee) : "Free"}</dd>
@@ -108,17 +121,23 @@ async function Order({ params }: Pick<PageProps<"/admin/orders/[id]">, "params">
           <Card title="Delivery">
             <dl className={s.facts}>
               <div>
-                <dt>Method</dt>
-                <dd>{METHOD[o.deliveryMethod]}</dd>
-              </div>
-              <div>
                 <dt>Address</dt>
                 <dd>{o.address}</dd>
               </div>
               <div>
-                <dt>Ready by</dt>
+                <dt>Deliver by</dt>
                 <dd>{date(o.readyBy)}</dd>
               </div>
+              <div>
+                <dt>Payment</dt>
+                <dd>{o.paymentMethod ? PAYMENT[o.paymentMethod] : "Not recorded"}</dd>
+              </div>
+              {o.note && (
+                <div>
+                  <dt>Note from customer</dt>
+                  <dd>{o.note}</dd>
+                </div>
+              )}
             </dl>
           </Card>
         </div>

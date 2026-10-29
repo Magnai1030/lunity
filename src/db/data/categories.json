@@ -1,0 +1,7 @@
+[
+  {"id":"sweets","parentId":null,"position":0,"name":{"en":"Sweets","mn":"Амттан"},"icon":"sparkle","showInMenu":true},
+  {"id":"drinks","parentId":null,"position":1,"name":{"en":"Tea & drinks","mn":"Цай, ундаа"},"icon":"cup","showInMenu":true},
+  {"id":"home","parentId":null,"position":2,"name":{"en":"Home","mn":"Гэр ахуй"},"icon":"home","showInMenu":true},
+  {"id":"wear","parentId":null,"position":3,"name":{"en":"Cashmere & felt","mn":"Ноолуур, эсгий"},"icon":"tag","showInMenu":true},
+  {"id":"set","parentId":null,"position":4,"name":{"en":"Gift sets","mn":"Бэлгийн багц"},"icon":"box","showInMenu":false}
+]

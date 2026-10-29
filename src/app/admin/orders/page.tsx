@@ -15,14 +15,14 @@ export const metadata: Metadata = { title: "Orders" };
 const TABS: { id: OrderStatus | "all"; label: string }[] = [
   { id: "all", label: "All" },
   { id: "preparing", label: "To prepare" },
-  { id: "ready", label: "Ready for pickup" },
+  { id: "ready", label: "Out for delivery" },
   { id: "completed", label: "Completed" },
 ];
 
 export default function OrdersPage({ searchParams }: PageProps<"/admin/orders">) {
   return (
     <>
-      <PageHeader title="Orders" sub="Move each order along with one tap: prepare it, then hand it over." />
+      <PageHeader title="Orders" sub="Move each order along with one tap: wrap it, send it out, mark it delivered." />
       <Suspense fallback={<Loading />}>
         <Orders searchParams={searchParams} />
       </Suspense>
@@ -66,12 +66,12 @@ async function Orders({ searchParams }: Pick<PageProps<"/admin/orders">, "search
                   {date(o.placedAt)} · {o.customer} · {o.contactPhone}
                 </span>
                 <span className="small">
-                  {o.lines.map((l) => `${l.title} ×${l.qty}`).join(", ")}
+                  {o.lines.map((l) => `${l.title}${l.variant ? ` (${l.variant.en})` : ""} ×${l.qty}`).join(", ")}
                 </span>
               </Link>
               <div className={s.orderSide}>
                 <span className="body-strong">{mnt(o.total)}</span>
-                <span className="small muted">Ready by {date(o.readyBy)}</span>
+                <span className="small muted">Deliver by {date(o.readyBy)}</span>
                 <StatusButton id={o.id} status={o.status} />
               </div>
             </li>

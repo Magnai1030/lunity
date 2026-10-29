@@ -50,10 +50,6 @@ export function ProfileView() {
               <ListRow href="/wishlist" icon="heart" title={t.saved} sub={t.savedSub} />
             </section>
             <section className={s.group}>
-              <SectionLabel>{t.account}</SectionLabel>
-              <ListRow icon="user" title={t.personal} sub={t.personalSub} onClick={() => {}} />
-            </section>
-            <section className={s.group}>
               <SectionLabel>{t.support}</SectionLabel>
               <ListRow icon="help" title={t.helpCenter} sub={t.helpCenterSub} onClick={() => setInfo("help")} />
             </section>

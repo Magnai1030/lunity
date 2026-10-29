@@ -34,7 +34,7 @@ async function Overview() {
 
   const stats = [
     { label: "To prepare", value: toPrepare.length, href: "/admin/orders?status=preparing", alert: toPrepare.length > 0 },
-    { label: "Ready for pickup", value: ready.length, href: "/admin/orders?status=ready", alert: false },
+    { label: "Out for delivery", value: ready.length, href: "/admin/orders?status=ready", alert: false },
     { label: "Low stock", value: low.length, href: "/admin/products?filter=low", alert: low.length > 0 },
     { label: "Total sales", value: mnt(sales), href: "/admin/orders", alert: false },
   ];
@@ -68,7 +68,7 @@ async function Overview() {
                     #{o.id} · {o.customer}
                   </span>
                   <span className="small muted">
-                    {o.units} {o.units === 1 ? "item" : "items"} · {mnt(o.total)} · ready by {date(o.readyBy)}
+                    {o.units} {o.units === 1 ? "item" : "items"} · {mnt(o.total)} · deliver by {date(o.readyBy)}
                   </span>
                 </Link>
                 <StatusButton id={o.id} status={o.status} />

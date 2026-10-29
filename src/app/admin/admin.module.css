@@ -181,6 +181,7 @@
 }
 
 /* Building blocks */
+
 .stack {
   display: flex;
   flex-direction: column;
@@ -955,12 +956,47 @@
 }
 .setItemHead {
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) 72px auto;
-  align-items: end;
+  grid-template-columns: 44px minmax(0, 1fr) 64px auto;
+  align-items: center;
   gap: 10px;
 }
-.qtyInput {
+.qtyField {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.qtyField input {
   text-align: center;
+}
+.setVariants {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+  padding-left: 54px;
+}
+.setNote {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  padding-left: 54px;
+}
+.setItem > .linkBtn {
+  margin-left: 54px;
+}
+@media (min-width: 720px) {
+  .setNote {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+    align-items: center;
+  }
+}
+@media (max-width: 520px) {
+  .setVariants,
+  .setNote {
+    padding-left: 0;
+  }
+  .setItem > .linkBtn {
+    margin-left: 0;
+  }
 }
 .dangerRow {
   display: flex;
@@ -968,12 +1004,396 @@
   align-items: center;
   gap: 12px;
 }
-.confirm {
+
+/* Category tree */
+.treeLevel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.treeLevel .treeLevel {
+  margin: 6px 0 0 28px;
+  padding-left: 14px;
+  border-left: 1px dashed var(--line);
+}
+.treeRow {
+  position: relative;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas: "grip en mn" ". count tools" ". menu menu";
+  align-items: center;
+  gap: 8px;
+  padding: 8px 8px 8px 4px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-field);
+  background: var(--surface-card);
+  transition: background-color 0.12s ease, border-color 0.12s ease, opacity 0.12s ease;
+}
+.treeRow > .grip { grid-area: grip; }
+.treeRow > input:nth-of-type(1) { grid-area: en; }
+.treeRow > input:nth-of-type(2) { grid-area: mn; }
+.treeCount { grid-area: count; }
+.treeTools { grid-area: tools; display: flex; justify-content: flex-end; flex-wrap: wrap; }
+.treeMenu { grid-area: menu; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+.treeRow > input {
+  height: 38px;
+  min-width: 0;
+  padding: 0 10px;
+  border: 1px solid var(--border-field);
+  border-radius: var(--radius-sm);
+  background: var(--surface-card);
+  font-size: 15px;
+}
+.treeRow > input:focus-visible {
+  outline: 0;
+  box-shadow: var(--focus-ring);
+}
+.treeTools button {
+  width: 34px;
+  height: 34px;
+}
+.treeTools button:disabled {
+  opacity: 0.25;
+}
+.grip {
+  display: grid;
+  place-items: center;
+  height: 38px;
+  color: var(--ink-muted);
+  cursor: grab;
+  border-radius: var(--radius-sm);
+}
+.grip:hover {
+  background: var(--surface-chip);
+  color: var(--ink);
+}
+.grip:active {
+  cursor: grabbing;
+}
+.treeDragging {
+  opacity: 0.45;
+}
+/* Drop feedback: a line above/below, or a highlight to nest inside. */
+.drop_before::before,
+.drop_after::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--focus);
+}
+.drop_before::before {
+  top: -5px;
+}
+.drop_after::after {
+  bottom: -5px;
+}
+.drop_inside {
+  border-color: var(--focus);
+  background: color-mix(in srgb, var(--focus) 12%, var(--surface-card));
+}
+.dropNo {
+  border-color: var(--error);
+}
+.treeCheck {
   display: inline-flex;
-  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+.treeCheck input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--ok);
+}
+.treeIcon {
+  display: inline-flex;
   align-items: center;
   gap: 8px;
 }
+
+@media (min-width: 900px) {
+  .treeRow {
+    grid-template-columns: 28px minmax(0, 1fr) minmax(0, 1fr) 96px auto;
+    grid-template-areas: "grip en mn count tools" ". menu menu menu menu";
+  }
+  .treeCount {
+    text-align: right;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .treeRow {
+    transition: none;
+  }
+}
+
+/* Pickers (icon grid, searchable product list) */
+.picker {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.pickerCaret {
+  transform: rotate(90deg);
+  color: var(--ink-muted);
+}
+.iconPickerBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 8px 0 10px;
+  border: 1px solid var(--border-field);
+  border-radius: var(--radius-sm);
+  background: var(--surface-card);
+  color: var(--ink);
+  cursor: pointer;
+}
+.productPickerBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: var(--control);
+  padding: 0 14px;
+  border: 1.5px dashed var(--border-field);
+  border-radius: var(--radius-field);
+  background: transparent;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+.productPickerBtn > span {
+  flex: 1;
+}
+.iconPickerBtn:hover,
+.productPickerBtn:hover {
+  background: var(--surface-chip);
+}
+.iconPickerBtn:focus-visible,
+.productPickerBtn:focus-visible {
+  outline: 0;
+  box-shadow: var(--focus-ring);
+}
+.pickerPanel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 40;
+  background: var(--surface-card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-field);
+  box-shadow: var(--shadow-lift);
+}
+.iconGrid {
+  display: grid;
+  grid-template-columns: repeat(6, 40px);
+  gap: 4px;
+  padding: 8px;
+}
+.iconCell {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--ink);
+  cursor: pointer;
+}
+.iconCell:hover {
+  background: var(--surface-chip);
+}
+.iconCell:focus-visible {
+  outline: 0;
+  box-shadow: var(--focus-ring);
+}
+.iconCellOn,
+.iconCellOn:hover {
+  background: var(--surface-inverse);
+  color: var(--ink-on-inverse);
+}
+.productPanel {
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.pickerSearch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink-muted);
+}
+.pickerSearch:focus-within {
+  color: var(--ink);
+  box-shadow: inset 0 -2px 0 var(--focus);
+}
+/* The panel's underline shows focus; no box around the field itself. */
+.pickerSearch input:focus-visible {
+  outline: 0;
+  box-shadow: none;
+}
+.pickerSearch input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 15px;
+}
+.pickerList {
+  max-height: 320px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 6px;
+}
+.pickerOption {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.pickerOptionOn {
+  background: var(--surface-chip);
+}
+.pickerEmpty {
+  padding: 12px;
+}
+
+/* Brands */
+.brandHead {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: end;
+  gap: 12px;
+}
+.miniField textarea {
+  min-height: 80px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-field);
+  border-radius: var(--radius-sm);
+  background: var(--surface-card);
+  font-size: 15px;
+  resize: vertical;
+}
+.miniField textarea:focus-visible {
+  outline: 0;
+  box-shadow: var(--focus-ring);
+}
+
+/* Confirm dialog */
+.confirmDialog {
+  width: min(440px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface-card);
+  color: var(--ink);
+  box-shadow: var(--shadow-lift);
+}
+.confirmDialog::backdrop {
+  background: var(--scrim);
+}
+.confirmDialog[open] {
+  animation: confirmIn 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.confirmDialog[open]::backdrop {
+  animation: confirmFade 0.18s ease;
+}
+@keyframes confirmIn {
+  from {
+    opacity: 0;
+    scale: 0.96;
+  }
+}
+@keyframes confirmFade {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .confirmDialog[open],
+  .confirmDialog[open]::backdrop {
+    animation: none;
+  }
+}
+.confirmBody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px;
+}
+.confirmIcon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--error-surface);
+  color: var(--error);
+}
+.confirmText {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.confirmText ul {
+  margin: 0;
+  padding-left: 20px;
+  list-style: disc;
+}
+.confirmError {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--error-surface);
+  color: var(--error);
+}
+/* Two equal buttons, Cancel then the destructive one. */
+.confirmActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+/* Card colour for the text: white on dark red (light theme), near-black on pink (dark theme). */
+/* Full-size delete trigger, same as the buttons beside it but red. */
+.dangerOutline,
+.dangerOutline:hover {
+  color: var(--error);
+  border-color: var(--error);
+}
+.dangerOutline:hover {
+  background: var(--error-surface);
+}
+.confirmDanger {
+  background: var(--error);
+  color: var(--surface-card);
+}
+.confirmDanger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--error) 85%, var(--ink));
+}
+.confirmDanger:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 
 /* Collections */
 .collList {
@@ -1055,4 +1475,19 @@
 }
 .zero {
   color: var(--warn);
+}
+
+/* Selects — kept last so it wins over the field rules' background/padding shorthands.
+   The browser's own arrow sits flush against the edge (and differs per browser),
+   so draw one chevron, inset like the field's text. Mid-grey reads in light and dark. */
+.selectField select,
+.miniField select {
+  appearance: none;
+  padding-right: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1.5l5 5 5-5' stroke='%238a8a83' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 12px 8px;
+  text-overflow: ellipsis;
+  cursor: pointer;
 }

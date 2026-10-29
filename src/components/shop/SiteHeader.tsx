@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Button, IconButton, IconLink, cx } from "@/components/ui";
+import { menuCategories } from "@/lib/data";
 import { useShop } from "@/lib/store";
 import { MenuDrawer } from "./MenuDrawer";
 import { InfoSheet, type InfoKind } from "./InfoSheets";
@@ -14,13 +15,7 @@ export function SiteHeader({ desktopOnly }: { desktopOnly?: boolean }) {
   const [menu, setMenu] = useState(false);
   const [info, setInfo] = useState<InfoKind | null>(null);
 
-  const nav = [
-    { href: "/search?cat=sweets", label: t.cats.sweets },
-    { href: "/search?cat=drinks", label: t.cats.drinks },
-    { href: "/search?cat=home", label: t.cats.home },
-    { href: "/search?cat=wear", label: t.cats.wear },
-    { href: "/sets", label: t.setsTitle },
-  ];
+  const nav = [...menuCategories.map((c) => ({ href: `/search?cat=${c.id}`, label: c.name[lang] })), { href: "/sets", label: t.setsTitle }];
 
   return (
     <>

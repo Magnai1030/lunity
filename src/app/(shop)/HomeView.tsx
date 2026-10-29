@@ -8,19 +8,20 @@ import { Guide, InfoSheet, type InfoKind } from "@/components/shop/InfoSheets";
 import { PageShell } from "@/components/shop/PageShell";
 import { QuickView } from "@/components/shop/QuickView";
 import { ShopCard } from "@/components/shop/ShopCard";
-import { coverPhoto, brands, defaultFilters, filterProducts, getBrand, getCollection, getRecipient, giftsFor, productHref, products, RECIPIENTS, recipientName, recipients, type Category, type Recipient } from "@/lib/data";
-import { fmt, formatPrice } from "@/lib/i18n";
+import { coverPhoto, brands, defaultFilters, filterProducts, getBrand, getCollection, getRecipient, giftsFor, saleActive, productHref, products, RECIPIENTS, recipientName, recipients, categoryChildren, categoryName, type Recipient } from "@/lib/data";
+import { fmt } from "@/lib/i18n";
 import { useShop } from "@/lib/store";
 import s from "./home.module.css";
+import { ProductPrice } from "@/components/shop/Price";
 
-const CATS: (Category | "all")[] = ["all", "sweets", "drinks", "home", "wear", "set"];
+const CATS = ["all", ...categoryChildren(null).map((c) => c.id)];
 
 export function HomeView() {
   const { t, lang } = useShop();
   const [quick, setQuick] = useState<string | null>(null);
   const [info, setInfo] = useState<InfoKind | null>(null);
   const [guideTo, setGuideTo] = useState<Recipient | null>(null);
-  const [cat, setCat] = useState<Category | "all">("all");
+  const [cat, setCat] = useState("all");
   const [to, setTo] = useState<Recipient | "all">("all");
   const [top, setTop] = useState(false);
 
@@ -97,7 +98,7 @@ export function HomeView() {
             <div className={s.filterRow} role="group" aria-label={t.filterCat}>
               {CATS.map((c) => (
                 <Chip key={c} variant="outline" selected={cat === c} onClick={() => setCat(c)}>
-                  {t.cats[c]}
+                  {c === "all" ? t.allCats : categoryName(c, lang)}
                 </Chip>
               ))}
             </div>
@@ -256,9 +257,14 @@ function SetsTeaser() {
             art={p.id} photo={coverPhoto(p.id)}
             title={p.text[lang].title}
             brand={getBrand(p.brand)?.name}
-            price={formatPrice(p.price)}
+            price={<ProductPrice product={p} t={t} />}
             extra={<span className="small muted">{p.text[lang].size}</span>}
-            badges={p.isNew ? <Badge tone="new">{t.newLabel}</Badge> : null}
+            badges={
+              <>
+                {saleActive(p) && <Badge tone="error">{t.sale}</Badge>}
+                {p.isNew && <Badge tone="new">{t.newLabel}</Badge>}
+              </>
+            }
           />
         );
       })}

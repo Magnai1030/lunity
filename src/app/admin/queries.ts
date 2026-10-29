@@ -15,12 +15,14 @@ export function getOrders() {
           return { ...it, title: p?.text.en.title ?? it.productId, sku: p?.sku ?? "", photo: p?.photos[0] };
         });
       const subtotal = lines.reduce((n, l) => n + l.unitPrice * l.qty, 0);
+      const savings = lines.reduce((n, l) => n + (l.regularUnitPrice - l.unitPrice) * l.qty, 0);
       const user = users.find((u) => u.id === o.userId);
       return {
         ...o,
         customer: user?.name ?? "Guest",
         customerEmail: user?.email ?? "",
         subtotal,
+        savings,
         lines,
         units: lines.reduce((n, l) => n + l.qty, 0),
         total: subtotal + o.shippingFee,

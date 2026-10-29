@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Badge, Button, SectionLabel, SummaryRows, Thumb, cx } from "@/components/ui";
 import { InfoSheet } from "@/components/shop/InfoSheets";
 import { PageShell } from "@/components/shop/PageShell";
-import { coverPhoto, getOrder, getProduct, orderSubtotal, orderTotal } from "@/lib/data";
+import { coverPhoto, getOrder, getProduct, orderSavings, orderSubtotal, orderTotal } from "@/lib/data";
 import { fmt, formatDate, formatDateShort, formatPrice, formatShipping } from "@/lib/i18n";
 import { useShop } from "@/lib/store";
 import { useToday } from "@/lib/useToday";
@@ -19,15 +19,18 @@ export function OrderDetailView({ id }: { id: string }) {
   const [help, setHelp] = useState(false);
   const o = getOrder(id)!;
   const subtotal = orderSubtotal(o);
+  const savings = orderSavings(o);
   const total = orderTotal(o);
   const n = o.items.reduce((a, i) => a + i.qty, 0);
 
-  const reached = o.status === "preparing" ? 2 : 3; // index of the current step
+  // One step per status; every order is delivered (there's no store pickup).
+  const reached = { preparing: 1, ready: 2, completed: 3 }[o.status]; // index of the current step
+  const deliverBy = formatDate(o.readyBy, lang);
   const steps = [
     { label: t.timeline.placed, sub: formatDate(o.placed, lang) },
-    { label: t.timeline.paid, sub: formatDate(o.placed, lang) },
-    { label: t.timeline.preparing, sub: o.status === "preparing" && today ? fmt(t.estDays, { n: daysBetween(today, o.readyBy) }) : formatDate(o.readyBy, lang) },
-    { label: t.timeline.ready, sub: o.status === "preparing" ? fmt(t.est, { d: formatDate(o.readyBy, lang) }) : formatDate(o.readyBy, lang) },
+    { label: t.timeline.preparing, sub: o.status === "preparing" && today ? fmt(t.estDays, { n: daysBetween(today, o.readyBy) }) : "" },
+    { label: t.timeline.shipped, sub: o.status === "ready" ? fmt(t.est, { d: deliverBy }) : "" },
+    { label: t.timeline.delivered, sub: o.status === "completed" ? deliverBy : fmt(t.est, { d: deliverBy }) },
   ];
 
   return (
@@ -64,16 +67,23 @@ export function OrderDetailView({ id }: { id: string }) {
         <section className={s.block}>
           <SectionLabel aside={n === 1 ? t.item : fmt(t.items, { n })}>{t.itemsH}</SectionLabel>
           <ul>
-            {o.items.map((it) => {
+            {/* Keyed by position: one product can appear twice in different variants. */}
+            {o.items.map((it, i) => {
               const p = getProduct(it.id)!;
+              const sale = it.regularUnitPrice > it.unitPrice;
               return (
-                <li key={it.id} className={s.item}>
+                <li key={`${i}-${it.id}`} className={s.item}>
                   <Thumb art={p.id} photo={coverPhoto(p.id)} size={56} />
                   <span className="stack" style={{ flex: 1, minWidth: 0 }}>
                     <span className="body-strong">{p.text[lang].title}</span>
-                    <span className="meta muted">×{it.qty}</span>
+                    <span className="meta muted">{[it.variant?.[lang], `×${it.qty}`].filter(Boolean).join(" · ")}</span>
+                    {sale && (
+                      <span className="small muted">
+                        <Badge tone="error">{t.sale}</Badge> {fmt(t.wasEach, { p: formatPrice(it.regularUnitPrice) })}
+                      </span>
+                    )}
                   </span>
-                  <span className="body-strong">{formatPrice(p.price * it.qty)}</span>
+                  <span className="body-strong">{formatPrice(it.unitPrice * it.qty)}</span>
                 </li>
               );
             })}
@@ -82,14 +92,17 @@ export function OrderDetailView({ id }: { id: string }) {
 
         <section className={s.block}>
           <SectionLabel>{t.summary}</SectionLabel>
-          <SummaryRows rows={[{ label: t.subtotal, value: formatPrice(subtotal) }, { label: t.shipping, value: formatShipping(o.shippingFee, t) }]} total={{ label: t.total, value: formatPrice(total) }} />
+          <SummaryRows rows={[
+              { label: t.subtotal, value: formatPrice(subtotal) },
+              ...(savings ? [{ label: t.saleSavings, value: `−${formatPrice(savings)}` }] : []),
+              { label: t.shipping, value: formatShipping(o.shippingFee, t) },
+            ]} total={{ label: t.total, value: formatPrice(total) }} />
         </section>
 
         <section className={s.block}>
           <SectionLabel>{t.deliveryH}</SectionLabel>
           <SummaryRows
             rows={[
-              { label: t.method, value: t.methods[o.deliveryMethod] },
               { label: t.address, value: o.address },
               { label: t.helpPhone, value: o.contactPhone },
             ]}

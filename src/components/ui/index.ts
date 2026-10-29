@@ -1,4 +1,4 @@
-export { Icon, type IconName } from "./Icon";
+export { Icon, ICON_NAMES, isIconName, type IconName } from "./Icon";
 export { Button, ButtonLink, type ButtonVariant } from "./Button";
 export { IconButton, IconLink } from "./IconButton";
 export { Chip, Badge, type BadgeTone } from "./Chip";

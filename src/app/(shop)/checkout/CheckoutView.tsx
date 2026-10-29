@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, useTransition, type FormEvent } from "react";
 import { Button, ButtonLink, EmptyState, Icon, InfoBanner, SummaryRows, TextArea, TextInput, Thumb, cx } from "@/components/ui";
 import { PageShell } from "@/components/shop/PageShell";
-import { coverPhoto, cartLeadDays, getProduct, nextOrderId, selectionLabel, settings, unitPrice } from "@/lib/data";
-import { deliveryWhen, fmt, formatPrice, formatShipping } from "@/lib/i18n";
+import { coverPhoto, cartLeadDays, getProduct, selectionLabel, settings, unitPrice } from "@/lib/data";
+import { deliveryWhen, fmt, formatDate, formatPrice, formatShipping } from "@/lib/i18n";
+import { placeOrder, type PlaceOrderError } from "./actions";
 import { useShop } from "@/lib/store";
 import { useToday } from "@/lib/useToday";
 import s from "./checkout.module.css";
@@ -13,13 +14,41 @@ import s from "./checkout.module.css";
 type Pay = "qpay" | "socialpay" | "card" | "bank";
 const PAYS: Pay[] = ["qpay", "socialpay", "card", "bank"];
 
+type Placed = { no: string; when: string };
+/**
+ * The confirmation is also kept in sessionStorage: in dev, placing an order rewrites the data
+ * files and the page reloads, which would otherwise drop it. Shown again for 10 minutes while
+ * the cart stays empty, so a refresh doesn't lose it either.
+ */
+const LAST_ORDER = "lunar-gift-shop:last-order";
+const LAST_ORDER_MS = 10 * 60 * 1000;
+function rememberOrder(o: Placed) {
+  try {
+    sessionStorage.setItem(LAST_ORDER, JSON.stringify({ ...o, at: Date.now() }));
+  } catch {
+    // storage blocked: the in-memory confirmation still shows
+  }
+}
+function recentOrder(): Placed | null {
+  try {
+    const o = JSON.parse(sessionStorage.getItem(LAST_ORDER) ?? "null");
+    return o && Date.now() - o.at < LAST_ORDER_MS ? { no: o.no, when: o.when } : null;
+  } catch {
+    return null;
+  }
+}
+
 export function CheckoutView() {
-  const { t, lang, cart, subtotal, hydrated, clearCart } = useShop();
+  const { t, lang, cart, subtotal, hydrated, clearCart, user } = useShop();
+  const [placing, startPlacing] = useTransition();
+  const [orderError, setOrderError] = useState<PlaceOrderError | null>(null);
   const [form, setForm] = useState({ phone: "", city: settings.defaultCity, district: "", street: "", note: "" });
   const [pay, setPay] = useState<Pay>("qpay");
   const [tried, setTried] = useState(false);
   // Set on submit; the cart is cleared then, so the delivery estimate is kept with the number.
-  const [done, setDone] = useState<{ no: string; when: string } | null>(null);
+  const [placed, setPlaced] = useState<Placed | null>(null);
+  // Only read after hydration (storage doesn't exist on the server), and never over a new cart.
+  const done = placed ?? (hydrated && cart.length === 0 ? recentOrder() : null);
   const when = deliveryWhen(cartLeadDays(cart), useToday(), t, lang);
 
   const digits = form.phone.replace(/\D/g, "");
@@ -40,9 +69,22 @@ export function CheckoutView() {
       requestAnimationFrame(() => document.querySelector<HTMLElement>("[aria-invalid='true']")?.focus());
       return;
     }
-    setDone({ no: nextOrderId(), when });
-    clearCart();
-    window.scrollTo({ top: 0 });
+    setOrderError(null);
+    startPlacing(async () => {
+      const r = await placeOrder({
+        lines: cart.map((c) => ({ id: c.id, qty: c.qty, sel: c.sel })),
+        ...form,
+        payment: pay,
+        signedIn: !!user,
+      });
+      if (!r.ok) return setOrderError(r.error);
+      // The server's date wins: it saw the stock at the moment the order was placed.
+      const o = { no: r.id, when: fmt(t.when.by, { d: formatDate(r.readyBy, lang) }) };
+      rememberOrder(o);
+      setPlaced(o);
+      clearCart();
+      window.scrollTo({ top: 0 });
+    });
   };
 
   const step = done ? 3 : 2;
@@ -142,10 +184,15 @@ export function CheckoutView() {
             <div className={`buybar buybar--inline ${s.confirm}`}>
               <div className="buybar__row">
                 <span className="body muted">{t.total}</span>
-                <span className="price-lg">{formatPrice(subtotal)}</span>
+                <span className="price-lg">{formatPrice(subtotal + settings.shippingFee)}</span>
               </div>
-              <Button type="submit" fullWidth iconAfter="arrow">
-                {t.confirm}
+              {orderError && (
+                <InfoBanner tone="error" icon="alert">
+                  {t.orderErr[orderError]}
+                </InfoBanner>
+              )}
+              <Button type="submit" fullWidth iconAfter="arrow" disabled={placing}>
+                {placing ? t.placing : t.confirm}
               </Button>
               <p className="small muted" style={{ textAlign: "center" }}>
                 {t.confirmHint}

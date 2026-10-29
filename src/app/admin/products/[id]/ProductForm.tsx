@@ -2,21 +2,21 @@
 
 import { useState } from "react";
 import { TextArea, TextInput } from "@/components/ui";
-import type { BrandRow, Category, ProductRow, RecipientRow } from "@/db/models";
+import type { BrandRow, CategoryRow, ProductRow, RecipientRow } from "@/db/models";
 import { saveProduct } from "../../actions";
 import { AdminForm, Card, Switch } from "../../AdminForm";
 import { PhotoManager } from "./PhotoManager";
 import s from "../../admin.module.css";
 
-const CATEGORIES: { id: Category; label: string }[] = [
-  { id: "sweets", label: "Sweets" },
-  { id: "drinks", label: "Tea & drinks" },
-  { id: "home", label: "Home" },
-  { id: "wear", label: "Cashmere & felt" },
-  { id: "set", label: "Gift set" },
-];
+/** Categories in tree order with their depth, for an indented dropdown. */
+function flatten(categories: CategoryRow[], parentId: string | null = null, depth = 0): { c: CategoryRow; depth: number }[] {
+  return categories
+    .filter((c) => c.parentId === parentId)
+    .sort((a, b) => a.position - b.position)
+    .flatMap((c) => [{ c, depth }, ...flatten(categories, c.id, depth + 1)]);
+}
 
-export function ProductForm({ kind, product: p, brands, recipients }: { kind: "product" | "set"; product: ProductRow; brands: BrandRow[]; recipients: RecipientRow[] }) {
+export function ProductForm({ product: p, brands, recipients, categories }: { product: ProductRow; brands: BrandRow[]; recipients: RecipientRow[]; categories: CategoryRow[] }) {
   // Only drives showing/hiding the stock field; the checkbox itself is uncontrolled form data.
   const [tracked, setTracked] = useState(p.stock !== null);
   const [onSale, setOnSale] = useState(p.salePrice !== null);
@@ -85,11 +85,10 @@ export function ProductForm({ kind, product: p, brands, recipients }: { kind: "p
         <Card title="Organize">
           <label className={s.selectField}>
             <span className="small muted">Category</span>
-            <select name="category" defaultValue={p.category}>
-              {/* "Gift set" is for sets; a product picks what it is. */}
-              {CATEGORIES.filter((c) => kind === "set" || c.id !== "set" || p.category === "set").map((c) => (
+            <select name="categoryId" defaultValue={p.categoryId}>
+              {flatten(categories).map(({ c, depth }) => (
                 <option key={c.id} value={c.id}>
-                  {c.label}
+                  {"— ".repeat(depth) + c.name.en}
                 </option>
               ))}
             </select>

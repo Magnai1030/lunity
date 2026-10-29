@@ -5,6 +5,7 @@ import { IconButton, Thumb } from "@/components/ui";
 import type { CollectionItemKind } from "@/db/models";
 import { saveCollection, type ActionResult } from "../actions";
 import { Card, SaveBar, useSaveSlot } from "../AdminForm";
+import { ProductPicker } from "../Pickers";
 import s from "../admin.module.css";
 
 type Item = { kind: CollectionItemKind; itemId: string };
@@ -64,23 +65,15 @@ export function CollectionEditor({ id, name, placement, initial, pickable }: { i
       )}
 
       {available.length > 0 && (
-        <label className={s.selectField}>
-          <span className="small muted">Add to {name}</span>
-          <select
-            value=""
-            onChange={(e) => {
-              const p = find(e.target.value);
-              if (p) setItems((list) => [...list, { kind: p.kind, itemId: p.itemId }]);
-            }}
-          >
-            <option value="">Choose a product or set…</option>
-            {available.map((p) => (
-              <option key={p.itemId} value={p.itemId}>
-                {p.title} ({p.kind === "set" ? "set" : p.sku})
-              </option>
-            ))}
-          </select>
-        </label>
+        <ProductPicker
+          label={`Add to ${name}`}
+          placeholder="Choose a product or set"
+          items={available.map((p) => ({ id: p.itemId, title: p.title, meta: `${p.sku} · ${p.kind === "set" ? "Gift set" : "Product"}`, photo: p.photo }))}
+          onPick={(id) => {
+            const p = find(id);
+            if (p) setItems((list) => [...list, { kind: p.kind, itemId: p.itemId }]);
+          }}
+        />
       )}
 
       {!inScope && <SaveBar dirty={dirty} pending={pending} result={result} onSave={save} onDiscard={discard} onDone={() => setResult(null)} />}

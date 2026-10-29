@@ -1,13 +1,13 @@
 [
-  {"id":"p12.0","setId":"p12","position":0,"artProductId":"p2","qty":1,"text":{"en":{"name":"Ul boov","spec":"3 layers"},"mn":{"name":"Ул боов","spec":"3 давхар"}}},
-  {"id":"p12.1","setId":"p12","position":1,"artProductId":"p1","qty":1,"text":{"en":{"name":"Aaruul","spec":"300 g, assorted"},"mn":{"name":"Ааруул","spec":"300 гр, холимог"}}},
-  {"id":"p12.2","setId":"p12","position":2,"artProductId":"p11","qty":1,"text":{"en":{"name":"Brick tea","spec":"1 kg"},"mn":{"name":"Шахмал цай","spec":"1 кг"}}},
-  {"id":"p12.3","setId":"p12","position":3,"artProductId":"p6","qty":1,"text":{"en":{"name":"Khadag","spec":"Blue silk, 1.5 m"},"mn":{"name":"Хадаг","spec":"Цэнхэр торго, 1.5 м"}}},
-  {"id":"p5.0","setId":"p5","position":0,"artProductId":"p5","qty":1,"text":{"en":{"name":"Porcelain teapot","spec":"On a wooden tray"},"mn":{"name":"Шаазан данх","spec":"Модон тавиуртай"}}},
-  {"id":"p5.1","setId":"p5","position":1,"artProductId":"p7","qty":2,"text":{"en":{"name":"Porcelain bowls","spec":"Ø 11 cm"},"mn":{"name":"Шаазан аяга","spec":"Ø 11 см"}}},
-  {"id":"p5.2","setId":"p5","position":2,"artProductId":"p4","qty":1,"text":{"en":{"name":"Milk tea mix","spec":"400 g"},"mn":{"name":"Сүүтэй цайны холимог","spec":"400 гр"}}},
-  {"id":"p1.0","setId":"p1","position":0,"artProductId":"p1","qty":3,"text":{"en":{"name":"Aaruul","spec":"Plain, sweet, berry"},"mn":{"name":"Ааруул","spec":"Энгийн, чихэрлэг, жимсний"}}},
-  {"id":"p1.1","setId":"p1","position":1,"artProductId":"p1","qty":1,"text":{"en":{"name":"Gift tin","spec":"Metal, resealable"},"mn":{"name":"Бэлгийн хайрцаг","spec":"Төмөр, дахин таглагддаг"}}},
-  {"id":"p3.0","setId":"p3","position":0,"artProductId":"p3","qty":16,"text":{"en":{"name":"Chocolates","spec":"Milk and dark"},"mn":{"name":"Шоколад","spec":"Сүүн болон хар"}}},
-  {"id":"p10.0","setId":"p10","position":0,"artProductId":"p10","qty":3,"text":{"en":{"name":"Cashmere socks","spec":"Natural, grey, red"},"mn":{"name":"Ноолууран оймс","spec":"Цайвар, саарал, улаан"}}}
+  {"id":"p12.0","setId":"p12","position":0,"productId":"p2","qty":1,"selection":{"size":"5"},"note":null},
+  {"id":"p12.1","setId":"p12","position":1,"productId":"p1","qty":1,"selection":{"size":"300"},"note":null},
+  {"id":"p12.2","setId":"p12","position":2,"productId":"p11","qty":1,"selection":{},"note":null},
+  {"id":"p12.3","setId":"p12","position":3,"productId":"p6","qty":1,"selection":{"colour":"blue","size":"1.5"},"note":null},
+  {"id":"p5.0","setId":"p5","position":0,"productId":"p5","qty":1,"selection":{},"note":{"en":"Porcelain teapot on a wooden tray","mn":"Модон тавиуртай шаазан данх"}},
+  {"id":"p5.1","setId":"p5","position":1,"productId":"p7","qty":2,"selection":{"size":"1"},"note":null},
+  {"id":"p5.2","setId":"p5","position":2,"productId":"p4","qty":1,"selection":{"size":"400"},"note":null},
+  {"id":"p1.0","setId":"p1","position":0,"productId":"p1","qty":3,"selection":{},"note":{"en":"Plain, sweet, berry","mn":"Энгийн, чихэрлэг, жимсний"}},
+  {"id":"p1.1","setId":"p1","position":1,"productId":"p1","qty":1,"selection":{},"note":{"en":"Gift tin, metal, resealable","mn":"Бэлгийн төмөр хайрцаг, дахин таглагддаг"}},
+  {"id":"p3.0","setId":"p3","position":0,"productId":"p3","qty":16,"selection":{},"note":{"en":"Milk and dark","mn":"Сүүн болон хар"}},
+  {"id":"p10.0","setId":"p10","position":0,"productId":"p10","qty":3,"selection":{},"note":{"en":"Natural, grey, red","mn":"Цайвар, саарал, улаан"}}
 ]

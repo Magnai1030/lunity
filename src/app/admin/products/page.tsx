@@ -50,7 +50,9 @@ async function Products({ searchParams }: Pick<PageProps<"/admin/products">, "se
   const brands = readTable("brands");
   const sets = new Set(readTable("sets").map((x) => x.productId));
 
+  // Gift sets have their own section.
   const list = readTable("products").filter((p) => {
+    if (sets.has(p.id)) return false;
     if (filter === "low" && !isLowStock(p, lowStockThreshold)) return false;
     if (filter === "top" && !p.isTop) return false;
     if (filter === "sale" && p.salePrice === null) return false;
@@ -81,13 +83,7 @@ async function Products({ searchParams }: Pick<PageProps<"/admin/products">, "se
       ) : (
         <ul className={s.list}>
           {list.map((p) => (
-            <ProductRowEditor
-              key={p.id}
-              product={p}
-              brand={brands.find((b) => b.id === p.brandId)?.name ?? ""}
-              isSet={sets.has(p.id)}
-              low={isLowStock(p, lowStockThreshold)}
-            />
+            <ProductRowEditor key={p.id} product={p} href={`/admin/products/${p.id}`} meta={brands.find((b) => b.id === p.brandId)?.name ?? ""} low={isLowStock(p, lowStockThreshold)} />
           ))}
         </ul>
       )}

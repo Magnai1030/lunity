@@ -8,6 +8,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import type {
   BrandRow,
+  CategoryRow,
   CollectionItemRow,
   CollectionRow,
   OptionValueRow,
@@ -24,6 +25,7 @@ import type {
 
 type Tables = {
   brands: BrandRow;
+  categories: CategoryRow;
   recipients: RecipientRow;
   products: ProductRow;
   product_options: ProductOptionRow;

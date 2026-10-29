@@ -8,13 +8,12 @@ export type Lang = "en" | "mn";
 /** Translated column — one value per language (a jsonb column, or a translations table). */
 export type Localized<T> = Record<Lang, T>;
 
-export type Category = "sweets" | "drinks" | "home" | "wear" | "set";
 /** recipients.id */
 export type Recipient = string;
 export type Tier = "classic" | "premium";
 export type SetGroup = "food" | "home" | "wear";
 export type OrderStatus = "preparing" | "ready" | "completed";
-export type DeliveryMethod = "pickup" | "delivery";
+export type PaymentMethod = "qpay" | "socialpay" | "card" | "bank";
 export type CollectionItemKind = "product" | "set";
 /** archived: hidden from the store, kept for order history. */
 export type ProductStatus = "active" | "archived";
@@ -30,6 +29,24 @@ export type RecipientRow = {
   intro: Localized<string>;
 };
 
+/**
+ * categories.json — a tree up to 3 levels deep (parentId null = top level). Choosing a category
+ * in the store includes everything beneath it.
+ */
+export type CategoryRow = {
+  /** Also the URL value: /search?cat=<id>. */
+  id: string;
+  parentId: CategoryRow["id"] | null;
+  /** Order among siblings. */
+  position: number;
+  name: Localized<string>;
+  /** Icon in the mobile menu (an Icon name); null = default. */
+  icon: string | null;
+  /** Listed in the header and menu. Only top-level categories appear there. */
+  showInMenu: boolean;
+};
+export const MAX_CATEGORY_DEPTH = 3;
+
 /** brands.json */
 export type BrandRow = {
   id: string;
@@ -44,7 +61,7 @@ export type ProductRow = {
   /** Display number, e.g. "N° 001". */
   sku: string;
   brandId: BrandRow["id"];
-  category: Category;
+  categoryId: CategoryRow["id"];
   /** recipients.id values this product suits. */
   recipients: RecipientRow["id"][];
   tier: Tier | null;
@@ -101,15 +118,20 @@ export type SetRow = {
   highlight: Localized<string>;
 };
 
-/** set_items.json — what's inside a set. */
+/**
+ * set_items.json — what's inside a set: a product, which variant of it, and how many.
+ * Name, detail and picture come from the product; `note` replaces the detail when the
+ * variant alone doesn't say it (e.g. "Plain, sweet, berry").
+ */
 export type SetItemRow = {
   id: string;
   setId: SetRow["productId"];
   position: number;
-  /** Product whose artwork illustrates this item. */
-  artProductId: ProductRow["id"];
+  productId: ProductRow["id"];
   qty: number;
-  text: Localized<{ name: string; spec: string }>;
+  /** Chosen value key per option key (product_options.key → option_values.key); missing = default. */
+  selection: Record<string, string>;
+  note: Localized<string> | null;
 };
 
 /** collections.json — a named, ordered list of products and sets (home hero, teasers, campaigns). */
@@ -159,18 +181,23 @@ export type UserRow = {
 /** orders.json */
 export type OrderRow = {
   id: string;
-  userId: UserRow["id"];
+  /** null = guest checkout. */
+  userId: UserRow["id"] | null;
   /** ISO date. */
   placedAt: string;
   /** ISO date. */
   readyBy: string;
+  /** preparing → ready (out for delivery) → completed (delivered). Every order is delivered; there's no store pickup. */
   status: OrderStatus;
-  deliveryMethod: DeliveryMethod;
   address: string;
   /** Phone to reach the customer about this order. */
   contactPhone: string;
   /** MNT charged for shipping on this order. */
   shippingFee: number;
+  /** How the customer chose to pay; null on orders from before it was recorded. */
+  paymentMethod: PaymentMethod | null;
+  /** Delivery note from checkout ("Call when outside"). */
+  note: string;
 };
 
 /** order_items.json */
@@ -179,6 +206,12 @@ export type OrderItemRow = {
   orderId: OrderRow["id"];
   productId: ProductRow["id"];
   qty: number;
-  /** Price per unit at the time of the order. */
+  /** Variant bought, as option key → value key (product_options.key → option_values.key). */
+  selection: Record<string, string>;
+  /** That variant's labels when ordered ("800 g · Premium"), kept even if variants change later; null = no variants. */
+  variant: Localized<string> | null;
+  /** Price paid per unit, sale included. */
   unitPrice: number;
+  /** Regular price per unit for the same variant; above unitPrice when bought on sale. */
+  regularUnitPrice: number;
 };

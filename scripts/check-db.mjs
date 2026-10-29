@@ -7,7 +7,7 @@ const dir = new URL("../src/db/data/", import.meta.url);
 const table = (name) => JSON.parse(readFileSync(new URL(`${name}.json`, dir), "utf8"));
 
 const t = Object.fromEntries(
-  ["brands", "recipients", "products", "product_options", "option_values", "sets", "set_items", "users", "orders", "order_items", "collections", "collection_items", "settings"].map((n) => [n, table(n)]),
+  ["brands", "categories", "recipients", "products", "product_options", "option_values", "sets", "set_items", "users", "orders", "order_items", "collections", "collection_items", "settings"].map((n) => [n, table(n)]),
 );
 
 const errors = [];
@@ -31,6 +31,19 @@ function ref(name, col, target, targetKey = "id", where = () => true) {
 for (const name of Object.keys(t)) unique(name, name === "sets" ? "productId" : "id");
 
 ref("products", "brandId", "brands");
+ref("products", "categoryId", "categories");
+ref("categories", "parentId", "categories", "id", (c) => c.parentId !== null);
+for (const c of t.categories) {
+  let depth = 1;
+  for (let p = c.parentId; p !== null; depth++) {
+    const parent = t.categories.find((x) => x.id === p);
+    if (!parent || parent.id === c.id || depth > 3) {
+      errors.push(`categories ${c.id}: ${parent ? "more than 3 levels deep or loops" : "parent missing"}`);
+      break;
+    }
+    p = parent.parentId;
+  }
+}
 ref("product_options", "productId", "products");
 {
   const known = ids(t.recipients);
@@ -39,8 +52,14 @@ ref("product_options", "productId", "products");
 ref("option_values", "optionId", "product_options");
 ref("sets", "productId", "products");
 ref("set_items", "setId", "sets", "productId");
-ref("set_items", "artProductId", "products");
-ref("orders", "userId", "users");
+ref("set_items", "productId", "products");
+for (const x of t.set_items) {
+  for (const [key, value] of Object.entries(x.selection)) {
+    const option = t.product_options.find((o) => o.productId === x.productId && o.key === key);
+    if (!option || !t.option_values.some((v) => v.optionId === option.id && v.key === value)) errors.push(`set_items ${x.id}: ${key}=${value} is not a variant of ${x.productId}`);
+  }
+}
+ref("orders", "userId", "users", "id", (r) => r.userId !== null);
 ref("order_items", "orderId", "orders");
 ref("order_items", "productId", "products");
 ref("collection_items", "collectionId", "collections");

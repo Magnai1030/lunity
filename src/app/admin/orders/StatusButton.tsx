@@ -6,8 +6,8 @@ import type { OrderStatus } from "@/db/models";
 import { setOrderStatus } from "../actions";
 
 const NEXT: Partial<Record<OrderStatus, { to: OrderStatus; label: string }>> = {
-  preparing: { to: "ready", label: "Mark ready" },
-  ready: { to: "completed", label: "Mark picked up" },
+  preparing: { to: "ready", label: "Send out" },
+  ready: { to: "completed", label: "Mark delivered" },
 };
 
 /** The one next step for an order. Completed orders have none. */

@@ -28,6 +28,7 @@ const PATHS = {
   receipt: ["M5 4h14v16H5z", "M5 9h14M9 4v5"],
   user: ["M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z", "M4.5 20a7.5 7.5 0 0 1 15 0"],
   bell: ["M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15z", "M10 20.5a2 2 0 0 0 4 0"],
+  grip: ["M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01"],
   settings: ["M4 7h9M17 7h3M4 17h3M11 17h9", "M15 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM9 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"],
   help: ["M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z", "M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6", "M12 17v.01"],
   book: ["M5 4.5h5a2 2 0 0 1 2 2V20a2 2 0 0 0-2-2H5z", "M19 4.5h-5a2 2 0 0 0-2 2V20a2 2 0 0 1 2-2h5z"],
@@ -48,6 +49,9 @@ const PATHS = {
 } as const;
 
 export type IconName = keyof typeof PATHS;
+export const ICON_NAMES = Object.keys(PATHS) as IconName[];
+/** For icon names stored as data (e.g. a category's icon), which may not exist. */
+export const isIconName = (name: string | null | undefined): name is IconName => !!name && name in PATHS;
 
 type Props = {
   name: IconName;

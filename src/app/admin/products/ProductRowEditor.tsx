@@ -11,7 +11,7 @@ import s from "../admin.module.css";
 type Patch = Parameters<typeof updateProductQuick>[1];
 
 /** One product in the list: price and stock save on blur or Enter; Top and New toggle instantly. */
-export function ProductRowEditor({ product: p, brand, isSet, low }: { product: ProductRow; brand: string; isSet: boolean; low: boolean }) {
+export function ProductRowEditor({ product: p, href, meta, low }: { product: ProductRow; href: string; meta: string; low: boolean }) {
   const [pending, start] = useTransition();
   const [note, setNote] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -36,7 +36,7 @@ export function ProductRowEditor({ product: p, brand, isSet, low }: { product: P
 
   return (
     <li className={cx(s.productRow, pending && s.busy, p.status === "archived" && s.archivedRow)}>
-      <Link href={`/admin/products/${p.id}`} className={s.productId}>
+      <Link href={href} className={s.productId}>
         <Thumb art={p.id} photo={p.photos[0]} size={48} />
         <span className={s.productText}>
           <span className={s.titleLine}>
@@ -45,8 +45,7 @@ export function ProductRowEditor({ product: p, brand, isSet, low }: { product: P
             {p.salePrice !== null && <Badge tone="error">Sale {mnt(p.salePrice)}</Badge>}
           </span>
           <span className="small muted">
-            {p.sku} · {brand}
-            {isSet && " · Set"}
+            {p.sku} · {meta}
           </span>
         </span>
       </Link>

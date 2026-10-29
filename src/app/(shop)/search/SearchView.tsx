@@ -7,21 +7,20 @@ import { FilterSheet } from "@/components/shop/FilterSheet";
 import { PageShell } from "@/components/shop/PageShell";
 import { QuickView } from "@/components/shop/QuickView";
 import { ShopCard } from "@/components/shop/ShopCard";
-import { activeFilterCount, brands, defaultFilters, filterProducts, type Category, type Filters, type Recipient, RECIPIENTS, recipients } from "@/lib/data";
+import { activeFilterCount, brands, categoryChildren, categoryPath, defaultFilters, filterProducts, getCategory, type Filters, type Recipient, RECIPIENTS, recipients } from "@/lib/data";
 import { fmt } from "@/lib/i18n";
 import { useShop } from "@/lib/store";
 import s from "./search.module.css";
 
-const CATS: (Category | "all")[] = ["all", "sweets", "drinks", "home", "wear", "set"];
 
 function fromParams(sp: URLSearchParams): Filters {
-  const cat = sp.get("cat") as Category | null;
+  const cat = sp.get("cat");
   const to = sp.get("to") as Recipient | null;
   const brand = sp.get("brand");
   return {
     ...defaultFilters,
     q: sp.get("q") ?? "",
-    cat: cat && CATS.includes(cat) ? cat : "all",
+    cat: cat && getCategory(cat) ? cat : "all",
     to: to && RECIPIENTS.includes(to) ? to : "all",
     brand: brand && brands.some((b) => b.id === brand) ? brand : "",
     top: sp.get("top") === "1",
@@ -41,6 +40,7 @@ function Search({ initial }: { initial: Filters }) {
   const [quick, setQuick] = useState<string | null>(null);
 
   const results = filterProducts(f, lang);
+  const path = f.cat === "all" ? [] : categoryPath(f.cat);
   // Category and person have their own chip rows, so the Filter badge counts only the rest.
   const nFilters = activeFilterCount({ ...f, cat: "all", to: "all" });
   const idle = !f.q && activeFilterCount(f) === 0;
@@ -68,9 +68,12 @@ function Search({ initial }: { initial: Filters }) {
 
         <div className={s.toolbar}>
           <div className="chiprail" role="group" aria-label={t.filterCat}>
-            {CATS.map((c) => (
-              <Chip key={c} variant="outline" selected={f.cat === c} onClick={() => setF({ ...f, cat: c })}>
-                {t.cats[c]}
+            <Chip variant="outline" selected={f.cat === "all"} onClick={() => setF({ ...f, cat: "all" })}>
+              {t.allCats}
+            </Chip>
+            {categoryChildren(null).map((c) => (
+              <Chip key={c.id} variant="outline" selected={path[0]?.id === c.id} onClick={() => setF({ ...f, cat: c.id })}>
+                {c.name[lang]}
               </Chip>
             ))}
           </div>
@@ -79,6 +82,24 @@ function Search({ initial }: { initial: Filters }) {
             {nFilters > 0 && <span className="pill-count">{nFilters}</span>}
           </Button>
         </div>
+        {/* Drill-down: each chosen level with subcategories gets a row ("All" = the level itself). */}
+        {path.map((level, depth) => {
+          const kids = categoryChildren(level.id);
+          if (!kids.length) return null;
+          const chosen = path[depth + 1]?.id ?? level.id;
+          return (
+            <div key={level.id} className={cx("chiprail", s.toRail)} role="group" aria-label={level.name[lang]}>
+              <Chip variant="outline" selected={chosen === level.id} onClick={() => setF({ ...f, cat: level.id })}>
+                {t.allCats}
+              </Chip>
+              {kids.map((c) => (
+                <Chip key={c.id} variant="outline" selected={chosen === c.id} onClick={() => setF({ ...f, cat: c.id })}>
+                  {c.name[lang]}
+                </Chip>
+              ))}
+            </div>
+          );
+        })}
         <div className={cx("chiprail", s.toRail)} role="group" aria-label={t.filterTo}>
           <Chip variant="outline" selected={f.to === "all"} onClick={() => setF({ ...f, to: "all" })}>
             {t.anyTo}

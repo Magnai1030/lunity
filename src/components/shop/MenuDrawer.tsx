@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Button, Icon, Sheet, type IconName } from "@/components/ui";
-import { orders } from "@/lib/data";
+import { Button, Icon, Sheet, isIconName, type IconName } from "@/components/ui";
+import { menuCategories, orders } from "@/lib/data";
 import { useShop } from "@/lib/store";
 import { Wordmark } from "./Logo";
 
@@ -11,10 +11,7 @@ export function MenuDrawer({ open, onClose }: { open: boolean; onClose: () => vo
 
   const shop: { href: string; icon: IconName; label: string }[] = [
     { href: "/search", icon: "grid", label: t.menuAll },
-    { href: "/search?cat=sweets", icon: "sparkle", label: t.cats.sweets },
-    { href: "/search?cat=drinks", icon: "cup", label: t.cats.drinks },
-    { href: "/search?cat=home", icon: "home", label: t.cats.home },
-    { href: "/search?cat=wear", icon: "tag", label: t.cats.wear },
+    ...menuCategories.map((c) => ({ href: `/search?cat=${c.id}`, icon: isIconName(c.icon) ? c.icon : "tag", label: c.name[lang] })),
     { href: "/sets", icon: "box", label: t.setsTitle },
     { href: "/search?top=1", icon: "star", label: t.topPicks },
     { href: "/#brands", icon: "tag", label: t.menuBrands },

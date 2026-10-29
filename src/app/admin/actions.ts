@@ -5,13 +5,13 @@ import { mkdirSync, unlinkSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
-import type { Category, CollectionItemKind, Localized, OrderStatus, ProductRow, ProductStatus, SetGroup, Tier } from "@/db/models";
+import { MAX_CATEGORY_DEPTH } from "@/db/models";
+import type { CollectionItemKind, Localized, OrderStatus, ProductRow, ProductStatus, SetGroup, Tier } from "@/db/models";
 import { readTable, updateTable } from "@/db/store";
 import { requireAdmin } from "./guard";
 
 export type ActionResult = { ok: boolean; message: string } | null;
 
-const CATEGORIES: Category[] = ["sweets", "drinks", "home", "wear", "set"];
 const STATUSES: OrderStatus[] = ["preparing", "ready", "completed"];
 
 const text = (fd: FormData, k: string) => String(fd.get(k) ?? "").trim();
@@ -79,7 +79,7 @@ export async function saveProduct(_prev: ActionResult, fd: FormData): Promise<Ac
   const onSale = fd.get("onSale") === "on";
   const salePrice = onSale ? count(fd.get("salePrice")) : null;
   const saleEndsAt = onSale ? text(fd, "saleEndsAt") || null : null;
-  const category = text(fd, "category") as Category;
+  const categoryId = text(fd, "categoryId");
   const tier = text(fd, "tier") as Tier | "";
   const brands = readTable("brands");
   const recipients = new Set(readTable("recipients").map((r) => r.id));
@@ -90,7 +90,7 @@ export async function saveProduct(_prev: ActionResult, fd: FormData): Promise<Ac
   if (onSale && (salePrice === null || salePrice === 0 || salePrice >= price))
     return { ok: false, message: "The sale price must be above 0 and below the regular price." };
   if (saleEndsAt && !/^\d{4}-\d{2}-\d{2}$/.test(saleEndsAt)) return { ok: false, message: "Pick a valid sale end date, or leave it empty." };
-  if (!CATEGORIES.includes(category)) return { ok: false, message: "Choose a category." };
+  if (!readTable("categories").some((c) => c.id === categoryId)) return { ok: false, message: "Choose a category." };
   if (!brands.some((b) => b.id === text(fd, "brandId"))) return { ok: false, message: "Choose a brand." };
 
   updateTable("products", (rows) =>
@@ -101,7 +101,7 @@ export async function saveProduct(_prev: ActionResult, fd: FormData): Promise<Ac
             salePrice,
             saleEndsAt,
             brandId: text(fd, "brandId"),
-            category,
+            categoryId,
             recipients: fd.getAll("recipients").map(String).filter((r) => recipients.has(r)),
             tier: tier === "classic" || tier === "premium" ? tier : null,
             price,
@@ -120,9 +120,25 @@ export async function saveProduct(_prev: ActionResult, fd: FormData): Promise<Ac
   return { ok: true, message: "Product saved" };
 }
 
+/** Sets start in the "set" category when it exists; anything else in the first top-level category. */
+function draftCategory(kind: "product" | "set") {
+  const roots = readTable("categories").filter((c) => c.parentId === null).sort((a, b) => a.position - b.position);
+  return (kind === "set" && roots.find((c) => c.id === "set")?.id) || roots.find((c) => c.id !== "set")?.id || roots[0]?.id || "";
+}
+
 /** Adds a draft product with safe defaults and opens it for editing. */
 export async function createProduct() {
   requireAdmin();
+  redirect(`/admin/products/${addDraft("product")}`);
+}
+
+/** Adds a draft gift set (a product row plus a sets row with one item) and opens it. */
+export async function createSet() {
+  requireAdmin();
+  redirect(`/admin/sets/${addDraft("set")}`);
+}
+
+function addDraft(kind: "product" | "set") {
   const rows = readTable("products");
   const n = Math.max(0, ...rows.map((p) => Number(p.id.replace(/\D/g, "")) || 0)) + 1;
   const id = `p${n}`;
@@ -134,7 +150,7 @@ export async function createProduct() {
       status: "active",
       sku: `N° ${String(n).padStart(3, "0")}`,
       brandId,
-      category: "sweets",
+      categoryId: draftCategory(kind),
       recipients: [],
       tier: null,
       price: 10000,
@@ -143,11 +159,18 @@ export async function createProduct() {
       stock: 0,
       isTop: false,
       isNew: true,
-      text: { en: { title: "New product", size: "", note: "" }, mn: { title: "Шинэ бүтээгдэхүүн", size: "", note: "" } },
+      text:
+        kind === "set"
+          ? { en: { title: "New gift set", size: "", note: "" }, mn: { title: "Шинэ бэлгийн багц", size: "", note: "" } }
+          : { en: { title: "New product", size: "", note: "" }, mn: { title: "Шинэ бүтээгдэхүүн", size: "", note: "" } },
       photos: [],
     },
   ]);
-  redirect(`/admin/products/${id}`);
+  if (kind === "set") {
+    // Starts empty: the editor asks for the products that go inside.
+    updateTable("sets", (rows) => [...rows, { productId: id, group: "food", savings: null, highlight: { en: "", mn: "" } }]);
+  }
+  return id;
 }
 
 /* Product photos — files live in public/uploads/products, URLs in products.photos (first = cover). */
@@ -264,13 +287,22 @@ export async function saveVariants(productId: string, options: VariantInput[]): 
 
 const trimLoc = (l: Localized<string>) => ({ en: l.en.trim(), mn: l.mn.trim() });
 
+/** Keeps only option/value keys that exist on the product; anything else falls back to the default. */
+function validSelection(productId: string, selection: Record<string, string>) {
+  const options = readTable("product_options").filter((o) => o.productId === productId);
+  const values = readTable("option_values");
+  return Object.fromEntries(
+    options.flatMap((o) => (values.some((v) => v.optionId === o.id && v.key === selection[o.key]) ? [[o.key, selection[o.key]]] : [])),
+  );
+}
+
 /* Gift sets — sets + set_items. null removes the set (the product stays as a normal product). */
 
 export type SetInput = {
   group: SetGroup;
   savings: number | null;
   highlight: Localized<string>;
-  items: { artProductId: string; qty: number; text: Localized<{ name: string; spec: string }> }[];
+  items: { productId: string; qty: number; selection: Record<string, string>; note: Localized<string> | null }[];
 } | null;
 
 export async function saveSet(productId: string, input: SetInput): Promise<ActionResult> {
@@ -281,9 +313,9 @@ export async function saveSet(productId: string, input: SetInput): Promise<Actio
   if (input) {
     if (input.items.length === 0) return { ok: false, message: "Add at least one item to the set." };
     for (const it of input.items) {
-      if (!it.text.en.name.trim() || !it.text.mn.name.trim()) return { ok: false, message: "Name every item in English and Mongolian." };
+      if (!products.has(it.productId)) return { ok: false, message: "One of the items is no longer a product. Remove it and add it again." };
       if (!Number.isInteger(it.qty) || it.qty < 1) return { ok: false, message: "Item quantities must be 1 or more." };
-      if (!products.has(it.artProductId)) return { ok: false, message: "Pick a picture for every item." };
+      if (it.note && (!it.note.en.trim() || !it.note.mn.trim())) return { ok: false, message: "Write each note in both English and Mongolian, or remove it." };
     }
     if (input.savings !== null && (!Number.isInteger(input.savings) || input.savings < 0)) return { ok: false, message: "Savings must be a whole number of 0 or more." };
   }
@@ -298,9 +330,10 @@ export async function saveSet(productId: string, input: SetInput): Promise<Actio
       id: `${productId}.${i}`,
       setId: productId,
       position: i,
-      artProductId: it.artProductId,
+      productId: it.productId,
       qty: it.qty,
-      text: { en: { name: it.text.en.name.trim(), spec: it.text.en.spec.trim() }, mn: { name: it.text.mn.name.trim(), spec: it.text.mn.spec.trim() } },
+      selection: validSelection(it.productId, it.selection),
+      note: it.note ? trimLoc(it.note) : null,
     })),
   ]);
   // A product that stops being a set can't stay in a collection as a "set".
@@ -324,8 +357,8 @@ export async function deleteProduct(id: string): Promise<ActionResult> {
   if (!product) return { ok: false, message: "This product no longer exists." };
   const orders = new Set(readTable("order_items").filter((it) => it.productId === id).map((it) => it.orderId));
   if (orders.size) return { ok: false, message: `It’s in ${orders.size} ${orders.size === 1 ? "order" : "orders"} (#${[...orders].join(", #")}), so it can’t be deleted. Archive it instead.` };
-  const usedBy = readTable("set_items").filter((x) => x.artProductId === id && x.setId !== id);
-  if (usedBy.length) return { ok: false, message: `Its picture is used inside the set ${usedBy[0].setId}. Change that set first, or archive this product.` };
+  const usedBy = readTable("set_items").filter((x) => x.productId === id && x.setId !== id);
+  if (usedBy.length) return { ok: false, message: `It’s inside the gift set ${usedBy[0].setId}. Remove it from that set first, or archive it instead.` };
 
   const optionIds = new Set(readTable("product_options").filter((o) => o.productId === id).map((o) => o.id));
   updateTable("option_values", (rows) => rows.filter((v) => !optionIds.has(v.optionId)));
@@ -343,6 +376,75 @@ export async function deleteProduct(id: string): Promise<ActionResult> {
     }
   }
   redirect("/admin/products");
+}
+
+/* Categories — the whole tree is saved at once, in display order. New ones have ids "new:…". */
+
+export type CategoryInput = { id: string; parentId: string | null; name: Localized<string>; icon: string | null; showInMenu: boolean };
+
+export async function saveCategories(nodes: CategoryInput[]): Promise<ActionResult> {
+  requireAdmin();
+  if (nodes.some((n) => !n.name.en.trim() || !n.name.mn.trim())) return { ok: false, message: "Name every category in English and Mongolian." };
+
+  const existing = readTable("categories");
+  const kept = new Set(nodes.filter((n) => !n.id.startsWith("new:")).map((n) => n.id));
+  const removed = existing.filter((c) => !kept.has(c.id));
+  const products = readTable("products");
+  for (const c of removed) {
+    const used = products.filter((p) => p.categoryId === c.id);
+    if (used.length) return { ok: false, message: `“${c.name.en}” still has ${used.length} ${used.length === 1 ? "product" : "products"}. Move them to another category first.` };
+  }
+
+  // New categories get a readable id from their English name; it's also their URL value.
+  const taken = new Set(kept);
+  const idOf = new Map(nodes.map((n) => [n.id, n.id.startsWith("new:") ? keyFrom(n.name.en, taken, "category") : n.id]));
+  const rows = nodes.map((n) => ({ ...n, id: idOf.get(n.id)!, parentId: n.parentId === null ? null : (idOf.get(n.parentId) ?? "?") }));
+
+  const byId = new Map(rows.map((r) => [r.id, r]));
+  for (const r of rows) {
+    if (r.parentId !== null && !byId.has(r.parentId)) return { ok: false, message: `“${r.name.en}” is inside a category that no longer exists.` };
+    let depth = 1;
+    for (let p = r.parentId; p !== null; p = byId.get(p)!.parentId) {
+      if (p === r.id || ++depth > MAX_CATEGORY_DEPTH) return { ok: false, message: `“${r.name.en}” would be more than ${MAX_CATEGORY_DEPTH} levels deep.` };
+    }
+  }
+
+  const positions = new Map<string | null, number>();
+  updateTable("categories", () =>
+    rows.map((r) => {
+      const position = positions.get(r.parentId) ?? 0;
+      positions.set(r.parentId, position + 1);
+      return { id: r.id, parentId: r.parentId, position, name: trimLoc(r.name), icon: r.icon, showInMenu: r.parentId === null && r.showInMenu };
+    }),
+  );
+  refresh();
+  return { ok: true, message: "Categories saved" };
+}
+
+/* Brands — saved all at once. New ones have ids "new:…". */
+
+export type BrandInput = { id: string; name: string; text: Localized<{ tag: string; about: string }> };
+
+export async function saveBrands(brands: BrandInput[]): Promise<ActionResult> {
+  requireAdmin();
+  if (brands.some((b) => !b.name.trim())) return { ok: false, message: "Give every brand a name." };
+  const names = brands.map((b) => b.name.trim().toLowerCase());
+  if (new Set(names).size !== names.length) return { ok: false, message: "Two brands have the same name." };
+
+  const kept = new Set(brands.filter((b) => !b.id.startsWith("new:")).map((b) => b.id));
+  const products = readTable("products");
+  for (const b of readTable("brands").filter((x) => !kept.has(x.id))) {
+    const used = products.filter((p) => p.brandId === b.id).length;
+    if (used) return { ok: false, message: `${b.name} still has ${used} ${used === 1 ? "product" : "products"}. Give them another brand first.` };
+  }
+
+  let n = Math.max(0, ...readTable("brands").map((b) => Number(b.id.replace(/\D/g, "")) || 0));
+  const trimText = (t: { tag: string; about: string }) => ({ tag: t.tag.trim(), about: t.about.trim() });
+  updateTable("brands", () =>
+    brands.map((b) => ({ id: b.id.startsWith("new:") ? `b${++n}` : b.id, name: b.name.trim(), text: { en: trimText(b.text.en), mn: trimText(b.text.mn) } })),
+  );
+  refresh();
+  return { ok: true, message: "Brands saved" };
 }
 
 /* Orders */

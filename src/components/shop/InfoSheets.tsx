@@ -4,8 +4,9 @@ import Link from "next/link";
 import { useState } from "react";
 import { ButtonLink, Chip, Icon, Sheet, Thumb } from "@/components/ui";
 import { coverPhoto, getRecipient, productHref, products, RECIPIENTS, recipientName, settings, type Recipient } from "@/lib/data";
-import { fmt, formatPrice } from "@/lib/i18n";
+import { fmt } from "@/lib/i18n";
 import { useShop } from "@/lib/store";
+import { ProductPrice } from "./Price";
 
 export type InfoKind = "how" | "help" | "guide";
 
@@ -91,7 +92,7 @@ export function Guide({ onNavigate, initial = RECIPIENTS[0] }: { onNavigate?: ()
             <Thumb art={p.id} photo={coverPhoto(p.id)} size={56} />
             <span className="stack" style={{ flex: 1, minWidth: 0 }}>
               <span className="body-strong">{p.text[lang].title}</span>
-              <span className="meta muted">{formatPrice(p.price)}</span>
+              <ProductPrice className="meta muted" product={p} t={t} />
             </span>
             <Icon name="chevron" size={18} className="muted" />
           </Link>

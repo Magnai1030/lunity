@@ -7,7 +7,7 @@ import { SaveScope } from "../../AdminForm";
 import { PageHeader } from "../../PageHeader";
 import { ProductForm } from "./ProductForm";
 import { ProductStatusCard } from "./ProductStatusCard";
-import { SetEditor } from "./SetEditor";
+import { SetEditor, type CatalogItem } from "./SetEditor";
 import { VariantEditor } from "./VariantEditor";
 import s from "../../admin.module.css";
 
@@ -47,9 +47,35 @@ export async function ProductEditor({ id, kind }: { id: string; kind: "product" 
         items: readTable("set_items")
           .filter((x) => x.setId === id)
           .sort((a, b) => a.position - b.position)
-          .map((x) => ({ artProductId: x.artProductId, qty: x.qty, text: x.text })),
+          .map((x) => ({ productId: x.productId, qty: x.qty, selection: x.selection, note: x.note })),
       }
     : null;
+  // Products a set can contain, with their variants: everything active (other sets too, e.g. the
+  // aaruul tin inside the Tsagaan Sar box), this set itself (for contents not sold separately),
+  // and anything already inside even if it was archived since.
+  const setIds = new Set(readTable("sets").map((x) => x.productId));
+  const inside = new Set(set?.items.map((it) => it.productId));
+  const allOptions = readTable("product_options");
+  const catalog: CatalogItem[] = products
+    .filter((p) => p.id === id || p.status === "active" || inside.has(p.id))
+    .map((p) => ({
+      id: p.id,
+      title: p.text.en.title,
+      sku: setIds.has(p.id) && p.id !== id ? `${p.sku} · Set` : p.sku,
+      photo: p.photos[0],
+      options: allOptions
+        .filter((o) => o.productId === p.id)
+        .sort((a, b) => a.position - b.position)
+        .map((o) => ({
+          key: o.key,
+          name: o.name.en,
+          values: values
+            .filter((v) => v.optionId === o.id)
+            .sort((a, b) => a.position - b.position)
+            .map((v) => ({ key: v.key, label: v.label.en, isDefault: v.isDefault })),
+        })),
+    }))
+    .sort((a, b) => a.title.localeCompare(b.title));
   const orderCount = new Set(readTable("order_items").filter((it) => it.productId === id).map((it) => it.orderId)).size;
   const archived = product.status === "archived";
 
@@ -72,11 +98,11 @@ export async function ProductEditor({ id, kind }: { id: string; kind: "product" 
         }
       />
       <SaveScope>
-        <ProductForm key={product.id} kind={kind} product={product} brands={readTable("brands")} recipients={readTable("recipients")} />
+        <ProductForm key={product.id} product={product} brands={readTable("brands")} recipients={readTable("recipients")} categories={readTable("categories")} />
         <div className={s.stack}>
           <VariantEditor key={`v-${id}`} productId={id} price={product.price} initial={variants} />
-          {set && <SetEditor key={`s-${id}`} productId={id} initial={set} choices={products.map((p) => ({ id: p.id, title: p.text.en.title, photo: p.photos[0] }))} />}
-          <ProductStatusCard id={id} status={product.status} orderCount={orderCount} />
+          {set && <SetEditor key={`s-${id}`} productId={id} initial={set} catalog={catalog} />}
+          <ProductStatusCard id={id} title={product.text.en.title} status={product.status} orderCount={orderCount} photoCount={product.photos.length} variantCount={variants.length} />
         </div>
       </SaveScope>
     </>

@@ -4,9 +4,10 @@ import Link from "next/link";
 import { Button, ButtonLink, EmptyState, IconButton, Thumb } from "@/components/ui";
 import { PageShell } from "@/components/shop/PageShell";
 import { coverPhoto, getBrand, getProduct, productHref } from "@/lib/data";
-import { fmt, formatPrice } from "@/lib/i18n";
+import { fmt } from "@/lib/i18n";
 import { useShop } from "@/lib/store";
 import s from "./wishlist.module.css";
+import { ProductPrice } from "@/components/shop/Price";
 
 export function WishlistView() {
   const { t, lang, fav, toggleFav, addToCart, showToast, hydrated } = useShop();
@@ -35,7 +36,7 @@ export function WishlistView() {
                       {title}
                     </Link>
                     <span className="meta muted">{getBrand(p.brand)?.name}</span>
-                    <span className="price">{formatPrice(p.price)}</span>
+                    <ProductPrice className="price" product={p} t={t} />
                     <div>
                       <Button
                         variant="secondary"

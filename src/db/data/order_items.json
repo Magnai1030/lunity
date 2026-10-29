@@ -1,10 +1,10 @@
 [
-  {"id":"1042.0","orderId":"1042","productId":"p12","qty":1,"unitPrice":185000},
-  {"id":"1042.1","orderId":"1042","productId":"p1","qty":1,"unitPrice":45000},
-  {"id":"1042.2","orderId":"1042","productId":"p6","qty":2,"unitPrice":22000},
-  {"id":"1038.0","orderId":"1038","productId":"p5","qty":1,"unitPrice":98000},
-  {"id":"1038.1","orderId":"1038","productId":"p11","qty":1,"unitPrice":26000},
-  {"id":"1025.0","orderId":"1025","productId":"p2","qty":1,"unitPrice":85000},
-  {"id":"0987.0","orderId":"0987","productId":"p9","qty":1,"unitPrice":145000},
-  {"id":"0987.1","orderId":"0987","productId":"p4","qty":2,"unitPrice":18000}
+  {"id":"1042.0","orderId":"1042","productId":"p12","qty":1,"selection":{},"variant":{"en":"Classic","mn":"Энгийн"},"unitPrice":185000,"regularUnitPrice":185000},
+  {"id":"1042.1","orderId":"1042","productId":"p1","qty":1,"selection":{},"variant":{"en":"500 g","mn":"500 гр"},"unitPrice":45000,"regularUnitPrice":45000},
+  {"id":"1042.2","orderId":"1042","productId":"p6","qty":2,"selection":{},"variant":{"en":"Blue · 1.5 m","mn":"Цэнхэр · 1.5 м"},"unitPrice":22000,"regularUnitPrice":22000},
+  {"id":"1038.0","orderId":"1038","productId":"p5","qty":1,"selection":{},"variant":{"en":"Classic","mn":"Энгийн"},"unitPrice":98000,"regularUnitPrice":98000},
+  {"id":"1038.1","orderId":"1038","productId":"p11","qty":1,"selection":{},"variant":null,"unitPrice":26000,"regularUnitPrice":26000},
+  {"id":"1025.0","orderId":"1025","productId":"p2","qty":1,"selection":{},"variant":{"en":"5 layers","mn":"5 давхар"},"unitPrice":85000,"regularUnitPrice":85000},
+  {"id":"0987.0","orderId":"0987","productId":"p9","qty":1,"selection":{},"variant":{"en":"Natural","mn":"Цайвар"},"unitPrice":145000,"regularUnitPrice":145000},
+  {"id":"0987.1","orderId":"0987","productId":"p4","qty":2,"selection":{},"variant":{"en":"400 g","mn":"400 гр"},"unitPrice":18000,"regularUnitPrice":18000}
 ]

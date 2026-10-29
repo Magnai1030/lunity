@@ -1,4 +1,4 @@
-import { getBrand, getSet, recipientName, selectionFor, type Lang, type Product, type Selection } from "@/lib/data";
+import { categoryName, getBrand, getSet, recipientName, selectionFor, type Lang, type Product, type Selection } from "@/lib/data";
 import type { Dict } from "@/lib/i18n";
 
 /**
@@ -20,7 +20,7 @@ export function productInfo(p: Product, t: Dict, lang: Lang, sel: Selection | un
   const chips = [forWhom, bySpec("size") ? "" : L.size, bySpec("tier") || !p.tier ? "" : t.tiers[p.tier]].filter(Boolean);
   const specs = [
     { label: t.specs.brand, value: getBrand(p.brand)?.name ?? "" },
-    { label: t.specs.type, value: t.types[p.cat] },
+    { label: t.specs.type, value: categoryName(p.cat, lang) },
     { label: t.specs.forWhat, value: forWhom },
     { label: isSet ? t.specs.contents : t.specs.size, value: size },
     ...(tier ? [{ label: t.specs.tier, value: tier }] : []),

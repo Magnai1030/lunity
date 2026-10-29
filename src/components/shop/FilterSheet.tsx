@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { Button, Chip, ChipGroup, RangeSlider, Sheet, Toggle } from "@/components/ui";
-import { activeFilterCount, brands, defaultFilters, filterProducts, PRICE_MAX, PRICE_MIN, type Category, type Filters, RECIPIENTS, recipientName } from "@/lib/data";
+import { activeFilterCount, brands, defaultFilters, filterProducts, PRICE_MAX, PRICE_MIN, categoryChildren, categoryName, type Filters, RECIPIENTS, recipientName } from "@/lib/data";
 import { fmt, formatPrice } from "@/lib/i18n";
 import { useShop } from "@/lib/store";
 
-const CATS: (Category | "all")[] = ["all", "sweets", "drinks", "home", "wear", "set"];
+const CATS = ["all", ...categoryChildren(null).map((c) => c.id)];
 const TO = ["all", ...RECIPIENTS] as const;
 
 /** Bottom-sheet filter. Edits a draft and applies it on "Show N items". */
@@ -40,7 +40,7 @@ function FilterBody({ initial, onApply }: { initial: Filters; onApply: (f: Filte
       <ChipGroup label={t.filterCat}>
         {CATS.map((c) => (
           <Chip key={c} variant="outline" selected={f.cat === c} onClick={() => patch({ cat: c })}>
-            {t.cats[c]}
+            {c === "all" ? t.allCats : categoryName(c, lang)}
           </Chip>
         ))}
       </ChipGroup>

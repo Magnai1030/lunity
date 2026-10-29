@@ -1,6 +1,6 @@
 [
-  {"id":"1042","userId":"u1","placedAt":"2026-10-25","readyBy":"2026-10-30","status":"ready","deliveryMethod":"pickup","address":"Ulaanbaatar, Khan-Uul district","contactPhone":"+976 9911 2233","shippingFee":0},
-  {"id":"1038","userId":"u1","placedAt":"2026-10-18","readyBy":"2026-10-23","status":"preparing","deliveryMethod":"pickup","address":"Ulaanbaatar, Khan-Uul district","contactPhone":"+976 9911 2233","shippingFee":0},
-  {"id":"1025","userId":"u1","placedAt":"2026-10-05","readyBy":"2026-10-10","status":"ready","deliveryMethod":"pickup","address":"Ulaanbaatar, Khan-Uul district","contactPhone":"+976 9911 2233","shippingFee":0},
-  {"id":"0987","userId":"u1","placedAt":"2026-08-30","readyBy":"2026-09-04","status":"completed","deliveryMethod":"pickup","address":"Ulaanbaatar, Khan-Uul district","contactPhone":"+976 9911 2233","shippingFee":0}
+  {"id":"1042","userId":"u1","placedAt":"2026-10-25","readyBy":"2026-10-30","status":"ready","address":"Ulaanbaatar, Khan-Uul district","contactPhone":"+976 9911 2233","shippingFee":0,"paymentMethod":null,"note":""},
+  {"id":"1038","userId":"u1","placedAt":"2026-10-18","readyBy":"2026-10-23","status":"preparing","address":"Ulaanbaatar, Khan-Uul district","contactPhone":"+976 9911 2233","shippingFee":0,"paymentMethod":null,"note":""},
+  {"id":"1025","userId":"u1","placedAt":"2026-10-05","readyBy":"2026-10-10","status":"ready","address":"Ulaanbaatar, Khan-Uul district","contactPhone":"+976 9911 2233","shippingFee":0,"paymentMethod":null,"note":""},
+  {"id":"0987","userId":"u1","placedAt":"2026-08-30","readyBy":"2026-09-04","status":"completed","address":"Ulaanbaatar, Khan-Uul district","contactPhone":"+976 9911 2233","shippingFee":0,"paymentMethod":null,"note":""}
 ]

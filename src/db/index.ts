@@ -4,6 +4,7 @@
  * database client is the only change needed there (plus making the reads async).
  */
 import brands from "./data/brands.json";
+import categories from "./data/categories.json";
 import collectionItems from "./data/collection_items.json";
 import collections from "./data/collections.json";
 import optionValues from "./data/option_values.json";
@@ -18,6 +19,7 @@ import sets from "./data/sets.json";
 import users from "./data/users.json";
 import type {
   BrandRow,
+  CategoryRow,
   CollectionItemRow,
   CollectionRow,
   OptionValueRow,
@@ -35,6 +37,7 @@ import type {
 // JSON imports widen literal unions to string, so each table is asserted to its row type.
 export const db = {
   brands: brands as BrandRow[],
+  categories: categories as CategoryRow[],
   products: products as ProductRow[],
   recipients: recipients as RecipientRow[],
   productOptions: productOptions as ProductOptionRow[],
